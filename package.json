@@ -2,6 +2,7 @@
     "name": "neouo",
     "displayName": "NeoUO",
     "description": "Run, record, and debug NeoUO scripts from Visual Studio Code",
+    "icon": "neouo-marketplace-icon.png",
     "publisher": "neouo",
     "repository": {
         "type": "git",
