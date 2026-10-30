@@ -1,0 +1,50 @@
+name: Publish to Open VSX
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish (defaults to package.json)
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve version
+        id: version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing neouo $VERSION to Open VSX"
+
+      - name: Download VSIX from R2
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          URL="https://releases.neouo.net/alpha/neouo-vscode-extension/neouo-${VERSION}.vsix"
+          curl -fsSL "$URL" -o "neouo-${VERSION}.vsix"
+          ls -l "neouo-${VERSION}.vsix"
+
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "::error::OVSX_PAT is not configured. Add it as a repository secret first."
+            exit 1
+          fi
+          VERSION="${{ steps.version.outputs.version }}"
+          npx --yes ovsx@1.3.0 publish "neouo-${VERSION}.vsix" -p "$OVSX_PAT"
