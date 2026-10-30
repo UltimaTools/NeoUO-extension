@@ -1,4 +1,4 @@
-﻿name: VSCodium Extension CI/CD
+﻿name: Extension CI
 
 on:
   push:
@@ -13,67 +13,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'  # Updated to a more recent LTS version
-
-      - name: Determine build type
-        id: build-type
-        run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            echo "type=release" >> $GITHUB_OUTPUT
-            echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "type=development" >> $GITHUB_OUTPUT
-            echo "version=$(make get-version)-dev.${{ github.run_number }}" >> $GITHUB_OUTPUT
-          fi
+          node-version: '20'
+          cache: npm
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate language assets
+        run: make check-assets
+
+      - name: Set development version
+        if: github.event_name != 'release'
         run: |
-          if [[ "${{ steps.build-type.outputs.type }}" == "release" ]]; then
-            npm ci
-          else
-            npm install
-          fi
+          node -e "const fs=require('fs');const p=require('./package.json');p.version=p.version.split('-')[0]+'-dev.${{ github.run_number }}';fs.writeFileSync('package.json',JSON.stringify(p,null,4)+'\n');console.log(p.version)"
 
-      - name: Install vsce
-        run: npm install -g vsce
-
-      - name: Set up Git
+      - name: Set release version from tag
+        if: github.event_name == 'release'
         run: |
-          git config user.name credzba
-          git config user.email neouo@example.invalid
+          node -e "const fs=require('fs');const p=require('./package.json');p.version='${{ github.event.release.tag_name }}'.replace(/^v/,'');fs.writeFileSync('package.json',JSON.stringify(p,null,4)+'\n');console.log(p.version)"
 
-      - name: lint
-        run: make lint
+      - name: Package extension
+        run: npx --yes @vscode/vsce package
 
-      - name: Increment version (development build only)
-        if: steps.build-type.outputs.type == 'development'
-        run: make increment-version
-
-      - name: Update version for development build
-        if: steps.build-type.outputs.type == 'development'
-        run: |
-          sed -i 's/"version": ".*"/"version": "${{ steps.build-type.outputs.version }}"/' package.json
-
-      - name: Tag version (development build only)
-        if: steps.build-type.outputs.type == 'development'
-        run: make tag-version
-
-      - name: Package Extension
-        run: vsce package 
-
-      - name: Upload VSIX as artifact
+      - name: Upload VSIX
         uses: actions/upload-artifact@v4
         with:
-          name: extension-${{ steps.build-type.outputs.type }}
-          path: "*.vsix"
+          name: extension-${{ github.event_name == 'release' && 'release' || 'development' }}
+          path: '*.vsix'
 
-      - name: Publish to Marketplace (release only)
-        if: steps.build-type.outputs.type == 'release'
-        run: vsce publish -p ${{ secrets.VSCE_PAT }}
-
+      - name: Publish to Marketplace
+        if: github.event_name == 'release'
+        run: npx --yes @vscode/vsce publish --packagePath *.vsix -p ${{ secrets.VSCE_PAT }}

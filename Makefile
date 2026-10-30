@@ -10,34 +10,42 @@ endif
 
 PUBLISHER := neouo
 EXTENSION_NAME := neouo
-VERSION := $(shell sed -n 's/.*"version": "\(.*\)",/\1/p' package.json)
+VERSION := $(shell node -p "require('./package.json').version")
 VSIX_FILE := $(EXTENSION_NAME)-$(VERSION).vsix
 
 # Default target
-all: npm-install package
+all: package
 
-# Install dependencies
+# Install dependencies from the lockfile
 npm-install:
 	@echo "Installing dependencies..."
-	npm install ws protobufjs vscode
+	npm ci
 
-npm-eslint:
-	@echo "Installing eslint for dev only"
-	npm install eslint --silent --dev
-
-lint: npm-eslint
+lint: npm-install
 	npx eslint .
 
+# Validate the generated language assets
+check-assets:
+	@node -e "const fs=require('fs');for (const f of ['package.json','snippets/uos.json','syntaxes/uos.tmLanguage.json','language-configuration.json','tools/uos-commands.json','tools/uos-templates.json']) JSON.parse(fs.readFileSync(f,'utf8'));console.log('language assets valid');"
+
+# Regenerate snippets, grammar and language configuration from the NeoUO catalog
+gen-uos:
+	node tools/generate-uos-assets.js
+
+# Generate Python protobuf bindings for the protocol test client
+protobuf:
+	protoc -I . --python_out=./test/ ProtoControl.proto
+
 # Package the extension into a .vsix file
-package: npm-install  lint  
+package: lint check-assets
 	@echo "Packaging the extension into a .vsix file..."
-	vsce package 
+	npx --yes @vscode/vsce package
 
 # Clean the project
 clean:
 	@echo "Cleaning the project..."
 	rm -rf node_modules
-	rm -f $(VSIX_FILE)
+	rm -f *.vsix
 
 # Install the extension in VS Code/VSCodium
 install: package
@@ -46,34 +54,17 @@ install: package
 
 # Uninstall the extension
 uninstall:
-	@echo "Uninstalling the extension..."
 	$(Code) --uninstall-extension $(PUBLISHER).$(EXTENSION_NAME)
 
-# Open the project in VSCodium
+# Open the project in VS Code
 open:
-	@echo "Opening the project in VSCodium
-
-protobuf:
-	protoc -I ./proto --python_out=./test/ ProtoControl.proto
-
-test: protobuf 
-	python3 test/test.py
+	$(Code) .
 
 get-version:
 	@node -p "require('./package.json').version"
 
 increment-version:
-	@current_version=$$(node -p "require('./package.json').version"); \
-	IFS='.' read -ra version_parts <<< "$$current_version"; \
-	new_patch=$$((version_parts[2] + 1)); \
-	new_version="$${version_parts[0]}.$${version_parts[1]}.$$new_patch"; \
-	sed -i 's/"version": "'$$current_version'"/"version": "'$$new_version'"/' package.json; \
-	echo "$$new_version" > .version
+	@node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));const v=p.version.split('.');v[2]=String(Number(v[2])+1);p.version=v.join('.');fs.writeFileSync('package.json',JSON.stringify(p,null,4)+'\n');console.log(p.version)"
 
 tag-version:
-	@new_version=$$(cat .version); \
-	#git add package.json; \
-	#git commit -m "Bump version to $$new_version"; \
-	#git tag v$$new_version; \
-	#git push && git push --tags
-
+	@echo "Versions are tagged via GitHub releases; see .github/workflows/checkin.yml"
