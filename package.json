@@ -1,0 +1,215 @@
+{
+    "name": "neouo",
+    "displayName": "NeoUO",
+    "description": "Run, record, and debug NeoUO scripts from Visual Studio Code",
+    "publisher": "neouo",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/UltimaTools/NeoUO-extension.git"
+    },
+    "bugs": {
+        "url": "https://github.com/UltimaTools/NeoUO-extension/issues"
+    },
+    "homepage": "https://github.com/UltimaTools/NeoUO-extension#readme",
+    "author": "UltimaTools",
+    "license": "SEE LICENSE IN LICENSE",
+    "keywords": [
+        "ultima",
+        "neouo",
+        "razorenhanced",
+        "uos",
+        "python",
+        "debugger",
+        "vscodium",
+        "extension"
+    ],
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Debuggers",
+        "Other",
+        "Themes"
+    ],
+    "activationEvents": [
+        "onLanguage:uos",
+        "onLanguage:python",
+        "onLanguage:csharp",
+        "onCommand:neoUO.record",
+        "onCommand:neoUO.stopRecording",
+        "onCommand:neoUO.play",
+        "onCommand:neoUO.stopPlaying",
+        "onDebug",
+        "onDebugResolve:neouo"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "debuggers": [
+            {
+                "type": "neouo",
+                "label": "NeoUO",
+                "languages": [
+                    "python"
+                ],
+                "program": "./debugAdapterStub.js",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Python script to debug in the running NeoUO client.",
+                                "default": "${file}"
+                            },
+                            "port": {
+                                "type": "number",
+                                "description": "Port of the NeoUO ProtoControl server (shown on the NeoUO technical help tab).",
+                                "default": 15454
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Ignored: NeoUO always pauses on the first line of the script.",
+                                "default": true
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "neouo",
+                        "request": "launch",
+                        "name": "NeoUO: Debug current file",
+                        "program": "${file}",
+                        "port": 15454
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "NeoUO: Debug current file",
+                        "description": "Debug the active Python file inside a running NeoUO client",
+                        "body": {
+                            "type": "neouo",
+                            "request": "launch",
+                            "name": "NeoUO: Debug current file",
+                            "program": "${file}",
+                            "port": 15454
+                        }
+                    }
+                ]
+            }
+        ],
+        "themes": [
+            {
+                "label": "NeoUO Theme",
+                "uiTheme": "vs-dark",
+                "path": "./themes/uos-theme.json"
+            }
+        ],
+        "languages": [
+            {
+                "id": "uos",
+                "aliases": [
+                    "UOSteam",
+                    "uos"
+                ],
+                "extensions": [
+                    ".uos"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "uos",
+                "scopeName": "source.uos",
+                "path": "./syntaxes/uos.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "uos",
+                "path": "./snippets/uos.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "neoUO.record",
+                "title": "Record",
+                "when": "!neoUO.isRecording"
+            },
+            {
+                "command": "neoUO.stopRecording",
+                "title": "Stop Recording",
+                "when": "neoUO.isRecording"
+            },
+            {
+                "command": "neoUO.play",
+                "title": "Play",
+                "when": "!neoUO.isPlaying"
+            },
+            {
+                "command": "neoUO.stopPlaying",
+                "title": "Stop Play",
+                "when": "neoUO.isPlaying"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "neoUO.record",
+                    "group": "navigation",
+                    "when": "editorLangId =~ /(python|csharp|uos)/ && editorTextFocus && !neoUO.isRecording",
+                    "title": "NeoUO: Record"
+                },
+                {
+                    "command": "neoUO.stopRecording",
+                    "group": "navigation",
+                    "when": "editorLangId =~ /(python|csharp|uos)/ && neoUO.isRecording",
+                    "title": "NeoUO: StopRecord"
+                },
+                {
+                    "command": "neoUO.play",
+                    "group": "navigation",
+                    "when": "editorLangId =~ /(python|csharp|uos)/ && editorTextFocus && !neoUO.isPlaying",
+                    "title": "NeoUO: Play"
+                },
+                {
+                    "command": "neoUO.stopPlaying",
+                    "group": "navigation",
+                    "when": "editorLangId =~ /(python|csharp|uos)/ && editorTextFocus && neoUO.isPlaying",
+                    "title": "NeoUO: StopPlay"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "NeoUO Configuration",
+            "properties": {
+                "neoUO.serverPort": {
+                    "type": "number",
+                    "default": 15454,
+                    "description": "Port used for the NeoUO ProtoControl server connection (15454-15464)."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "pretest": "npm run lint",
+        "lint": "eslint .",
+        "gen:uos": "node tools/generate-uos-assets.js"
+    },
+    "devDependencies": {
+        "@types/node": "^22.5.4",
+        "@types/vscode": "^1.60.0",
+        "@types/ws": "^8.5.14",
+        "eslint": "^9.11.1"
+    },
+    "dependencies": {
+        "protobufjs": "^7.4.0",
+        "ws": "^8.18.0"
+    }
+}

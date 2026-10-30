@@ -1,0 +1,59 @@
+﻿Write a vs code extension that adds 3 entries to the menu named "Record", "Stop Recording" and "Play"
+ 
+The implementation for the Play menu entry should:
+It should collect all the lines of text in the current document into the PlayRequest variable commands.
+The PlayRequest language variable should be set to ProtoLanguage.PYTHON if its a python file in editor, otherwise to ProtoLanguage.UOSTEAM.
+Call the protobuf Play command defined below passing the PlayRequest just defined.
+The returned stream should be monitored until the stream closes, and the content returned should be displayed in a build results window.
+
+The implementation for the Record menu item should:
+The RecordRequest variable language should be set to ProtoLanguage.PYTHON if the current document is a python file, otherwise it should be set to ProtoLanguage.UOSTEAM.
+Call the protobuf api Record defined below.
+The menu "Record" should change to "Stop Recording".
+The Record api returns a stream RecordResponse.
+this stream should be read from, and each string received should be appended to the bottom of the current document.
+
+The implementation for "Stop Recording" should:
+close the stream being monitored in the "Record" implementation above.
+change the "Stop Recording" menu item back to "Record"
+
+The extension will be named NeoUO
+The extension is in github repository: https://github.com/NeoUO/NeoUO-extension.git and the root directory should be named NeoUO-extension.
+The GRpc server is located on localhost at port 15454 but these 2 items should be put in global variables.
+The proto file is named ProtoControl.proto and the contents is:
+syntax = "proto3";
+
+option csharp_namespace = "NeoUO";
+
+package protocontrol;
+
+enum ProtoLanguage {
+    UNKNOWN = 0;  // Default value
+    PYTHON = 1;
+    CSHARP = 2;
+    UOSTEAM = 3;
+}
+
+service ProtoControl {
+  rpc Record (RecordRequest) returns (stream RecordResponse);
+  rpc Play (PlayRequest) returns (stream PlayResponse);
+}
+
+message RecordRequest {
+  ProtoLanguage language = 1;
+}
+
+message RecordResponse {
+  string data = 1;
+}
+
+message PlayRequest {
+  ProtoLanguage language = 1;
+  repeated string commands = 2;
+}
+
+message PlayResponse {
+  string result = 1;
+  bool is_finished = 2;
+}
+

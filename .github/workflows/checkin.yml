@@ -1,0 +1,79 @@
+﻿name: VSCodium Extension CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Updated to a more recent LTS version
+
+      - name: Determine build type
+        id: build-type
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "type=release" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "type=development" >> $GITHUB_OUTPUT
+            echo "version=$(make get-version)-dev.${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        run: |
+          if [[ "${{ steps.build-type.outputs.type }}" == "release" ]]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Install vsce
+        run: npm install -g vsce
+
+      - name: Set up Git
+        run: |
+          git config user.name credzba
+          git config user.email neouo@example.invalid
+
+      - name: lint
+        run: make lint
+
+      - name: Increment version (development build only)
+        if: steps.build-type.outputs.type == 'development'
+        run: make increment-version
+
+      - name: Update version for development build
+        if: steps.build-type.outputs.type == 'development'
+        run: |
+          sed -i 's/"version": ".*"/"version": "${{ steps.build-type.outputs.version }}"/' package.json
+
+      - name: Tag version (development build only)
+        if: steps.build-type.outputs.type == 'development'
+        run: make tag-version
+
+      - name: Package Extension
+        run: vsce package 
+
+      - name: Upload VSIX as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-${{ steps.build-type.outputs.type }}
+          path: "*.vsix"
+
+      - name: Publish to Marketplace (release only)
+        if: steps.build-type.outputs.type == 'release'
+        run: vsce publish -p ${{ secrets.VSCE_PAT }}
+

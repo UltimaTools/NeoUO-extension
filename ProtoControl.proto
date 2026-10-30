@@ -1,0 +1,258 @@
+syntax = "proto3";
+
+option csharp_namespace = "NeoUO";
+
+package protocontrol;
+
+enum ProtoLanguage {
+    Unknown = 0;  // Default value
+    Python = 1;
+    Csharp = 2;
+    Uosteam = 3;
+}
+
+enum ProtoMessageType {
+    UndefinedType = 0;
+    PlayResponseType = 1;
+    PlayRequestType = 2;
+    StopPlayRequestType = 3;
+    StopPlayResponseType = 4;
+
+    RecordResponseType = 10;
+    RecordRequestType = 11;
+    StopRecordRequestType = 12;
+    StopRecordResponseType = 13;
+
+    DebugStartRequestType = 20;
+    DebugEventType = 21;
+    SetBreakpointsRequestType = 22;
+    SetBreakpointsResponseType = 23;
+    DebugContinueRequestType = 24;
+    DebugContinueResponseType = 25;
+    DebugStepRequestType = 26;
+    DebugStepResponseType = 27;
+    DebugStackTraceRequestType = 28;
+    DebugStackTraceResponseType = 29;
+    DebugScopesRequestType = 30;
+    DebugScopesResponseType = 31;
+    DebugVariablesRequestType = 32;
+    DebugVariablesResponseType = 33;
+    DebugEvaluateRequestType = 34;
+    DebugEvaluateResponseType = 35;
+    DebugDisconnectRequestType = 36;
+    DebugDisconnectResponseType = 37;
+}
+
+enum StepType {
+    StepInto = 0;
+    StepOver = 1;
+    StepOut = 2;
+}
+
+enum DebugEventReason {
+    DebugStep = 0;
+    DebugBp = 1;
+    DebugException = 2;
+    DebugEntry = 3;
+    DebugOutput = 4;
+    DebugStderr = 5;
+}
+
+service ProtoControl {
+    rpc Record (RecordRequest) returns (stream RecordResponse);
+    rpc StopRecord (StopRecordRequest) returns (StopRecordResponse);
+
+    rpc Play (PlayRequest) returns (stream PlayResponse);
+    rpc StopPlay (StopPlayRequest) returns (StopPlayResponse);
+}
+
+// Record Messages
+message RecordRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    ProtoLanguage language = 3;
+}
+
+message StopRecordRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+}
+
+message RecordResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool more = 3;
+    string data = 4;
+}
+
+message StopRecordResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool success = 3;
+}
+
+// Play Messages
+message PlayRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    ProtoLanguage language = 3;
+    repeated string commands = 4;
+    string filepath = 5;
+}
+
+message PlayResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool more = 3;
+    string result = 4;
+}
+
+message StopPlayRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+
+}
+
+message StopPlayResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool success = 3;
+}
+
+// Debug Messages
+message DebugStartRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    ProtoLanguage language = 3;
+    repeated string commands = 4;
+    string filepath = 5;
+}
+
+message DebugEvent {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    DebugEventReason reason = 3;
+    int32 line = 4;
+    string file = 5;
+    string message = 6;
+}
+
+message SetBreakpointsRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    string file = 3;
+    repeated int32 lines = 4;
+}
+
+message SetBreakpointsResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    repeated DebugBreakpoint breakpoints = 3;
+}
+
+message DebugBreakpoint {
+    bool verified = 1;
+    int32 line = 2;
+}
+
+message DebugContinueRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+}
+
+message DebugContinueResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool success = 3;
+}
+
+message DebugStepRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    StepType step_type = 3;
+}
+
+message DebugStepResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool success = 3;
+}
+
+message DebugStackTraceRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+}
+
+message DebugStackFrame {
+    int32 id = 1;
+    string name = 2;
+    string file = 3;
+    int32 line = 4;
+}
+
+message DebugStackTraceResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    repeated DebugStackFrame frames = 3;
+}
+
+message DebugScopesRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    int32 frame_id = 3;
+}
+
+message DebugScope {
+    string name = 1;
+    int32 variables_reference = 2;
+}
+
+message DebugScopesResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    repeated DebugScope scopes = 3;
+}
+
+message DebugVariablesRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    int32 variables_reference = 3;
+}
+
+message DebugVariable {
+    string name = 1;
+    string value = 2;
+    string type = 3;
+    int32 variables_reference = 4;
+}
+
+message DebugVariablesResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    repeated DebugVariable variables = 3;
+}
+
+message DebugEvaluateRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    string expression = 3;
+    int32 frame_id = 4;
+}
+
+message DebugEvaluateResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    string result = 3;
+    bool success = 4;
+}
+
+message DebugDisconnectRequest {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+}
+
+message DebugDisconnectResponse {
+    ProtoMessageType type = 1;
+    int32 sessionid = 2;
+    bool success = 3;
+}

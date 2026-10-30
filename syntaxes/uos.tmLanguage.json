@@ -1,0 +1,72 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "UOSteam",
+    "patterns": [
+        {
+            "include": "#keywords"
+        }
+    ],
+    "repository": {
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.uos",
+                    "match": "\\b(if|elseif|else|endif|while|endwhile|for|to|in|endfor|return)\\b"
+                },
+                {
+                    "name": "keyword.control.uos",
+                    "match": "\\b(pause|break|continue|stop|replay|not|and|or)\\b"
+                },
+                {
+                    "name": "keyword.operator.comparison.uos",
+                    "match": "\\b(==|!=|>=|<=|<|>|\\[|\\])\\b"
+                },
+                {
+                    "name": "keyword.operator.at.uos",
+                    "match": "@"
+                },
+                {
+                    "name": "support.function.uos",
+                    "match": "\\b(fly|land|setability|attack|clearhands|clickobject|bandageself|usetype|useobject|useonce|clearusequeue|moveitem|moveitemoffset|movetype|movetypeoffset|walk|turn|run|useskill|feed|rename|shownames|equipitem|togglemounted|equipwand|buy|sell|clearbuy|clearsell|organizer|autoloot|dress|undress|dressconfig|toggleautoloout|togglescavenger|counter|unsetalias|setalias|findalias|promptalias|contents|inregion|skill|x|y|z|physical|fire|cold|poison|energy|str|dex|int|hits|maxhits|diffhits|stam|maxstam|mana|maxmana|usequeue|dressing|organizing|followers|maxfollowers|gold|hidden|luck|tithingpoints|weight|maxweight|diffweight|graphic|color|serial|amount|name|dead|direction|flying|paralyzed|poisoned|mounted|yellowhits|war|criminal|enemy|friend|gray|innocent|invulnerable|murderer|findobject|distance|inrange|buffexists|property|findtype|findlayer|skillstate|counttype|counttypeground|findwand|inparty|infriendlist|warmode|waitforgump|replygump|ingump|gumpexists|closegump|injournal|clearjournal|waitforjournal|poplist|pushlist|removelist|listexists|list|createlist|inlist|clearlist|info|ping|playmacro|playsound|resync|snapshot|hotkeys|where|messagebox|mapuo|clickscreen|paperdoll|helpbutton|guildbutton|questbutton|logoutbutton|virtue|msg|headmsg|partymsg|allymsg|whispermsg|yellmsg|sysmsg|chatmsg|emotemsg|promptmsg|timermsg|waitforprompt|cancelprompt|addfriend|removefriend|contextmenu|waitforcontext|ignoreboject|clearignorelist|setskill|waitforproperties|autocolorpick|waitforcontents|miniheal|bigheal|cast|chivalryheal|waitfortarget|canceltarget|target|targettype|targetground|targettile|targettileoffset|targettilerelative|cleartargetqueue|autotargetlast|autotargetself|autotargetobject|autotargettype|autotargettile|autotargettileoffset|autotargettilerelative|autotargetghost|autotargetground|cancelautotarget|getenemy|targetexists|waitingfortarget|getfriend|timer|timerexists|settimer|removetimer|createtimer)[!]?\\b"
+                },
+                {
+                    "name": "support.constant.uos",
+                    "match": "\\b[\\']?(any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)[\\']?\\b"
+                },
+                {
+                    "name": "comment.line.uos",
+                    "match": "//.*"
+                },
+                {
+                    "name": "constant.language.uos",
+                    "match": "\\b(?i:(true|false))\\b"
+                },
+                {
+                    "name": "constant.numeric.uos",
+                    "match": "\\b[0-9a-fA-F]{1,16}\\b"
+                },
+                {
+                    "name": "constant.numeric.hexadecimal.uos",
+                    "match": "\\b0(x|X)[0-9a-fA-F]+\\b"
+                },
+                {
+                    "name": "string.quoted.single.uos",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "support.constant.uos",
+                            "match": "\\b(found|any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)\\b"
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.double.uos",
+                    "begin": "\"",
+                    "end": "\""
+                }
+            ]
+        }
+    },
+    "scopeName": "source.uos"
+}

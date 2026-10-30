@@ -1,0 +1,21 @@
+﻿# Files and folders that are not shipped in the VSIX
+.github/**
+githooks/**
+.vscode/**
+.vscode-test/**
+test/**
+tools/**
+Makefile
+Specification.txt
+update-version.sh
+*.vsix
+*.log
+.eslintrc.json
+eslint.config.js
+package-lock.json
+dap_test.js
+dap_test_script.py
+vscode_mock.js
+proto_control_node_test.js
+proto_control_test_client.py
+settings.png

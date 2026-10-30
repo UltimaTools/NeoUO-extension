@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+*.vsix
+.version
+
+# Test and tooling output
+.vscode-test/
+coverage/
+.eslintcache
+__pycache__/
+*.pyc
+ProtoControl_pb2.py
+dap_test_script.py
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor state (allow shared launch/task configs)
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
