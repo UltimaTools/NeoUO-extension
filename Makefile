@@ -34,7 +34,7 @@ gen-uos:
 
 # Generate Python protobuf bindings for the protocol test client
 protobuf:
-	protoc -I . --python_out=./test/ ProtoControl.proto
+	protoc -I . --python_out=. ProtoControl.proto
 
 # Package the extension into a .vsix file
 package: lint check-assets

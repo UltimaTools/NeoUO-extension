@@ -35,4 +35,3 @@ source inspiration are credited to cesarsl.
 ## Third-party assets
 
 - Theme colors are inspired by the original UOSteam client appearance.
-- `settings.png` (if present) is a screenshot of this extension in VS Code.

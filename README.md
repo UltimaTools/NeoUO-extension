@@ -4,6 +4,8 @@ Run, record, and debug [NeoUO](https://github.com/UltimaTools/NeoUO) scripts
 directly from VS Code (or VSCodium). The extension talks to the running client
 over NeoUO's ProtoControl WebSocket server.
 
+[![Marketplace](https://img.shields.io/visual-studio-marketplace/v/neouo.neouo?label=marketplace)](https://marketplace.visualstudio.com/items?itemName=neouo.neouo)
+[![Marketplace installs](https://img.shields.io/visual-studio-marketplace/i/neouo.neouo)](https://marketplace.visualstudio.com/items?itemName=neouo.neouo)
 ![GitHub](https://img.shields.io/github/license/UltimaTools/NeoUO-extension)
 ![GitHub repo size](https://img.shields.io/github/repo-size/UltimaTools/NeoUO-extension)
 ![GitHub all releases](https://img.shields.io/github/downloads/UltimaTools/NeoUO-extension/total)
@@ -29,12 +31,31 @@ each client's technical help tab.
 
 ## Installation
 
+### From the Marketplace
+
+Open the Extensions view and search for **NeoUO**, or run:
+
+```bash
+code --install-extension neouo.neouo
+```
+
+Marketplace installs update automatically. VSCodium users can install the VSIX
+directly, or from Open VSX when it is published.
+
 ### From a VSIX package
+
+Download the latest `.vsix` from the [NeoUO download page](https://releases.neouo.net/)
+and install it:
+
+```bash
+code --install-extension neouo-<version>.vsix
+```
+
+To build the VSIX locally:
 
 ```bash
 npm install
 npx vsce package
-code --install-extension neouo-0.1.0.vsix
 ```
 
 ### Development build
