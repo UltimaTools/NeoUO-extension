@@ -54,3 +54,32 @@ jobs:
       - name: Publish to Marketplace (Trusted Publishing)
         if: github.event_name == 'release'
         run: npx --no-install vsce publish --oidc
+
+      - name: Upload VSIX to Cloudflare R2
+        if: github.event_name == 'release'
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "${R2_ACCOUNT_ID}" ] || [ -z "${R2_ACCESS_KEY_ID}" ] || [ -z "${R2_SECRET_ACCESS_KEY}" ]; then
+            echo "::warning::R2 secrets are not configured; skipping VSIX upload."
+            exit 0
+          fi
+          R2_BUCKET=neouo-releases
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          DEST="alpha/neouo-vscode-extension"
+          VERSION=$(node -p "require('./package.json').version")
+          VSIX="neouo-${VERSION}.vsix"
+          export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID}"
+          export AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY}"
+          export AWS_DEFAULT_REGION=us-east-1
+          aws s3 cp "${VSIX}" "s3://${R2_BUCKET}/${DEST}/${VSIX}" \
+            --endpoint-url="${R2_ENDPOINT}" \
+            --content-type "application/octet-stream"
+          printf '{\n  "version": "%s",\n  "tag": "%s",\n  "filename": "%s",\n  "baseUrl": "https://releases.neouo.net/%s/",\n  "publishedAt": "%s"\n}\n' \
+            "${VERSION}" "${{ github.event.release.tag_name }}" "${VSIX}" "${DEST}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > latest.json
+          aws s3 cp latest.json "s3://${R2_BUCKET}/${DEST}/latest.json" \
+            --endpoint-url="${R2_ENDPOINT}" \
+            --content-type "application/json" \
+            --cache-control "no-cache"
