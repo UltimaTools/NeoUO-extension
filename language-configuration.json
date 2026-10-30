@@ -1,26 +1,68 @@
 {
     "comments": {
         "lineComment": "//",
-        "blockComment": ["/*", "*/"]
+        "blockComment": [
+            "/*",
+            "*/"
+        ]
     },
     "brackets": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"]
+        [
+            "{",
+            "}"
+        ],
+        [
+            "[",
+            "]"
+        ],
+        [
+            "(",
+            ")"
+        ]
     ],
     "autoClosingPairs": [
-        { "open": "{", "close": "}" },
-        { "open": "[", "close": "]" },
-        { "open": "(", "close": ")" },
-        { "open": "\"", "close": "\"" },
-        { "open": "'", "close": "'" }
+        {
+            "open": "{",
+            "close": "}"
+        },
+        {
+            "open": "[",
+            "close": "]"
+        },
+        {
+            "open": "(",
+            "close": ")"
+        },
+        {
+            "open": "\"",
+            "close": "\""
+        },
+        {
+            "open": "'",
+            "close": "'"
+        }
     ],
     "surroundingPairs": [
-        { "open": "{", "close": "}" },
-        { "open": "[", "close": "]" },
-        { "open": "(", "close": ")" },
-        { "open": "\"", "close": "\"" },
-        { "open": "'", "close": "'" }
+        {
+            "open": "{",
+            "close": "}"
+        },
+        {
+            "open": "[",
+            "close": "]"
+        },
+        {
+            "open": "(",
+            "close": ")"
+        },
+        {
+            "open": "\"",
+            "close": "\""
+        },
+        {
+            "open": "'",
+            "close": "'"
+        }
     ],
     "indentationRules": {
         "increaseIndentPattern": "^\\s*(while|for|if|else)\\b",
@@ -30,17 +72,23 @@
         {
             "beforeText": "^\\s*if.*$",
             "afterText": "^.*$",
-            "action": { "indent": "indent" }
+            "action": {
+                "indent": "indent"
+            }
         },
         {
             "beforeText": "^\\s*else.*$",
             "afterText": "^.*$",
-            "action": { "indent": "indentOutdent" }
+            "action": {
+                "indent": "indentOutdent"
+            }
         },
         {
             "beforeText": "^\\s*endif.*$",
             "afterText": "^.*$",
-            "action": { "indent": "outdent" }
+            "action": {
+                "indent": "outdent"
+            }
         }
     ]
 }

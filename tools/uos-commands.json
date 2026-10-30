@@ -1,0 +1,1000 @@
+{
+    "source": "UOSteamEngine.cs",
+    "entries": [
+        {
+            "name": "addfriend",
+            "kind": "command",
+            "usage": "addfriend [serial]"
+        },
+        {
+            "name": "allymsg",
+            "kind": "command",
+            "usage": "allymsg ('text')"
+        },
+        {
+            "name": "amount",
+            "kind": "expression",
+            "usage": "amount (serial)"
+        },
+        {
+            "name": "attack",
+            "kind": "command",
+            "usage": "attack (serial)"
+        },
+        {
+            "name": "autocolorpick",
+            "kind": "command",
+            "usage": "autocolorpick (color) (dyesSerial) (dyeTubSerial)"
+        },
+        {
+            "name": "autoloot",
+            "kind": "command",
+            "usage": "autoloot - NOT IMPLEMENTED"
+        },
+        {
+            "name": "autotargetobject",
+            "kind": "command",
+            "usage": ""
+        },
+        {
+            "name": "bandage",
+            "kind": "expression",
+            "usage": "bandage"
+        },
+        {
+            "name": "bandageself",
+            "kind": "command",
+            "usage": "bandageself"
+        },
+        {
+            "name": "bigheal",
+            "kind": "command",
+            "usage": "bigheal [serial]"
+        },
+        {
+            "name": "buffexists",
+            "kind": "expression",
+            "usage": "buffexists ('buff name')"
+        },
+        {
+            "name": "buy",
+            "kind": "command",
+            "usage": "buy ('list name')"
+        },
+        {
+            "name": "cancelautotarget",
+            "kind": "command",
+            "usage": "cancelautotarget"
+        },
+        {
+            "name": "cancelprompt",
+            "kind": "command",
+            "usage": "cancelprompt"
+        },
+        {
+            "name": "canceltarget",
+            "kind": "command",
+            "usage": "canceltarget"
+        },
+        {
+            "name": "cast",
+            "kind": "command",
+            "usage": "cast (spell id/'spell name'/'last') [serial]"
+        },
+        {
+            "name": "chatmsg",
+            "kind": "command",
+            "usage": "chatmsg (text) [color]"
+        },
+        {
+            "name": "chivalryheal",
+            "kind": "command",
+            "usage": "chivalryheal [serial]"
+        },
+        {
+            "name": "clearbuy",
+            "kind": "command",
+            "usage": "clearbuy"
+        },
+        {
+            "name": "clearhands",
+            "kind": "command",
+            "usage": "clearhands ('left'/'right'/'both')"
+        },
+        {
+            "name": "clearignorelist",
+            "kind": "command",
+            "usage": "clearignorelist"
+        },
+        {
+            "name": "clearjournal",
+            "kind": "command",
+            "usage": "clearjournal"
+        },
+        {
+            "name": "clearlist",
+            "kind": "command",
+            "usage": "clearlist ('list name')"
+        },
+        {
+            "name": "clearsell",
+            "kind": "command",
+            "usage": "clearsell"
+        },
+        {
+            "name": "cleartargetqueue",
+            "kind": "command",
+            "usage": "cleartargetqueue"
+        },
+        {
+            "name": "clearusequeue",
+            "kind": "command",
+            "usage": "clearusequeue resets the use once list"
+        },
+        {
+            "name": "clickobject",
+            "kind": "command",
+            "usage": "clickobject (serial)"
+        },
+        {
+            "name": "clickscreen",
+            "kind": "command",
+            "usage": "clickscreen (x) (y) ['single'/'double'] ['left'/'right']"
+        },
+        {
+            "name": "closegump",
+            "kind": "command",
+            "usage": "closegump 'container' 'serial'"
+        },
+        {
+            "name": "cold",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "color",
+            "kind": "expression",
+            "usage": "color (operator) (value)"
+        },
+        {
+            "name": "contents",
+            "kind": "expression",
+            "usage": "if contents (serial) ('operator') ('value')"
+        },
+        {
+            "name": "contextmenu",
+            "kind": "command",
+            "usage": "contextmenu (serial) (option)"
+        },
+        {
+            "name": "counter",
+            "kind": "command",
+            "usage": "counter ('format') (operator) (value) NOT IMPLEMENTED"
+        },
+        {
+            "name": "counttype",
+            "kind": "expression",
+            "usage": "counttype (graphic) (color) (source) (operator) (value)"
+        },
+        {
+            "name": "counttypeground",
+            "kind": "expression",
+            "usage": "counttypeground (graphic) (color) (range) (operator) (value)"
+        },
+        {
+            "name": "createlist",
+            "kind": "command",
+            "usage": "createlist (list name)"
+        },
+        {
+            "name": "createtimer",
+            "kind": "command",
+            "usage": "createtimer ('timer name')"
+        },
+        {
+            "name": "criminal",
+            "kind": "expression",
+            "usage": "criminal [serial]"
+        },
+        {
+            "name": "dead",
+            "kind": "expression",
+            "usage": "dead [serial]"
+        },
+        {
+            "name": "dex",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "diffhits",
+            "kind": "expression",
+            "usage": "diffhits [serial]"
+        },
+        {
+            "name": "diffweight",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "direction",
+            "kind": "expression",
+            "usage": "direction [serial]"
+        },
+        {
+            "name": "directionname",
+            "kind": "expression",
+            "usage": "directionname [serial]"
+        },
+        {
+            "name": "distance",
+            "kind": "expression",
+            "usage": "distance (serial) (operator) (value)"
+        },
+        {
+            "name": "dress",
+            "kind": "command",
+            "usage": "dress ['profile name']"
+        },
+        {
+            "name": "dressconfig",
+            "kind": "command",
+            "usage": "dressconfig What is this supposed to do ? NOT IMPLEMENTED"
+        },
+        {
+            "name": "durability",
+            "kind": "expression",
+            "usage": "durability ('name') (serial) [operator] [value]"
+        },
+        {
+            "name": "emotemsg",
+            "kind": "command",
+            "usage": "emotemsg (text) [color]"
+        },
+        {
+            "name": "enemy",
+            "kind": "expression",
+            "usage": "enemy serial"
+        },
+        {
+            "name": "energy",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "equipitem",
+            "kind": "command",
+            "usage": "equipitem (serial) (layer)"
+        },
+        {
+            "name": "equipwand",
+            "kind": "command",
+            "usage": "NOT IMPLEMENTED"
+        },
+        {
+            "name": "feed",
+            "kind": "command",
+            "usage": "feed (serial) (graphic) [color] [amount]"
+        },
+        {
+            "name": "findalias",
+            "kind": "expression",
+            "usage": "findalias ('alias name')"
+        },
+        {
+            "name": "findlayer",
+            "kind": "expression",
+            "usage": "findlayer (serial) (layer)"
+        },
+        {
+            "name": "findobject",
+            "kind": "expression",
+            "usage": "findobject (serial) [color] [source] [amount] [range]"
+        },
+        {
+            "name": "findtype",
+            "kind": "expression",
+            "usage": "findtype (graphic) [color] [source] [amount] [range or search level]"
+        },
+        {
+            "name": "findwand",
+            "kind": "expression",
+            "usage": "findwand NOT IMPLEMENTED"
+        },
+        {
+            "name": "fire",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "fly",
+            "kind": "command",
+            "usage": "fly"
+        },
+        {
+            "name": "flying",
+            "kind": "expression",
+            "usage": "flying [serial]"
+        },
+        {
+            "name": "followers",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "friend",
+            "kind": "expression",
+            "usage": "friend serial"
+        },
+        {
+            "name": "getenemy",
+            "kind": "command",
+            "usage": "getenemy ('notoriety') ['filter']"
+        },
+        {
+            "name": "getfriend",
+            "kind": "command",
+            "usage": "getfriend ('notoriety') ['filter']"
+        },
+        {
+            "name": "gold",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "graphic",
+            "kind": "expression",
+            "usage": "graphic (serial) (operator) (value)"
+        },
+        {
+            "name": "gray",
+            "kind": "expression",
+            "usage": "gray serial"
+        },
+        {
+            "name": "guildbutton",
+            "kind": "command",
+            "usage": "guildbutton"
+        },
+        {
+            "name": "guildmsg",
+            "kind": "command",
+            "usage": "guildmsg ('text')"
+        },
+        {
+            "name": "gumpexists",
+            "kind": "expression",
+            "usage": "gumpexists (gump id/'any')"
+        },
+        {
+            "name": "headmsg",
+            "kind": "command",
+            "usage": "headmsg ('text') [color] [serial]"
+        },
+        {
+            "name": "helpbutton",
+            "kind": "command",
+            "usage": "helpbutton NOT IMPLEMENTED"
+        },
+        {
+            "name": "hidden",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "hits",
+            "kind": "expression",
+            "usage": "hits [serial]"
+        },
+        {
+            "name": "hotkeys",
+            "kind": "command",
+            "usage": "hotkeys"
+        },
+        {
+            "name": "ignoreobject",
+            "kind": "command",
+            "usage": "ignoreobject (serial)"
+        },
+        {
+            "name": "info",
+            "kind": "command",
+            "usage": ""
+        },
+        {
+            "name": "infriendlist",
+            "kind": "expression",
+            "usage": "infriendlist (serial)"
+        },
+        {
+            "name": "ingump",
+            "kind": "expression",
+            "usage": "ingump (gump id/'any') ('text')"
+        },
+        {
+            "name": "injournal",
+            "kind": "expression",
+            "usage": "if injournal ('text') ['author'/'system']"
+        },
+        {
+            "name": "inlist",
+            "kind": "expression",
+            "usage": "inlist ('list name') ('element value')"
+        },
+        {
+            "name": "innocent",
+            "kind": "expression",
+            "usage": "innocent serial"
+        },
+        {
+            "name": "inparty",
+            "kind": "expression",
+            "usage": "inparty NOT IMPLEMENTED"
+        },
+        {
+            "name": "inrange",
+            "kind": "expression",
+            "usage": "inrange (serial) (range)"
+        },
+        {
+            "name": "inregion",
+            "kind": "expression",
+            "usage": "inregion ('guards'/'town'/'dungeon'/'forest') [serial] [range]"
+        },
+        {
+            "name": "int",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "land",
+            "kind": "command",
+            "usage": "land"
+        },
+        {
+            "name": "list",
+            "kind": "expression",
+            "usage": "list ('list name') (operator) (value)"
+        },
+        {
+            "name": "listexists",
+            "kind": "expression",
+            "usage": "if listexists ('list name')"
+        },
+        {
+            "name": "location",
+            "kind": "command",
+            "usage": "location (serial)"
+        },
+        {
+            "name": "logoutbutton",
+            "kind": "command",
+            "usage": "logoutbutton"
+        },
+        {
+            "name": "luck",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "mana",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "mapuo",
+            "kind": "command",
+            "usage": "mapuo NOT IMPEMENTED"
+        },
+        {
+            "name": "maxfollowers",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "maxhits",
+            "kind": "expression",
+            "usage": "maxhits [serial]"
+        },
+        {
+            "name": "maxmana",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "maxstam",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "maxweight",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "messagebox",
+            "kind": "command",
+            "usage": "messagebox ('title') ('body')"
+        },
+        {
+            "name": "miniheal",
+            "kind": "command",
+            "usage": "miniheal [serial]"
+        },
+        {
+            "name": "mounted",
+            "kind": "expression",
+            "usage": "mounted [serial]"
+        },
+        {
+            "name": "moveitem",
+            "kind": "command",
+            "usage": "(serial) (destination) [(x, y, z)] [amount]"
+        },
+        {
+            "name": "moveitemoffset",
+            "kind": "command",
+            "usage": "moveitemoffset (serial) 'ground|container' [(x, y, z)] [amount]"
+        },
+        {
+            "name": "movetype",
+            "kind": "expression",
+            "usage": "movetype (graphic) (source) (destination) [(x, y, z)] [color] [amount] [range or search level]"
+        },
+        {
+            "name": "movetypeoffset",
+            "kind": "command",
+            "usage": "movetypeoffset (graphic) (source) 'ground' [(x, y, z)] [color] [amount] [range or search level]"
+        },
+        {
+            "name": "msg",
+            "kind": "command",
+            "usage": "msg text [color]"
+        },
+        {
+            "name": "murderer",
+            "kind": "expression",
+            "usage": "murderer [serial]"
+        },
+        {
+            "name": "name",
+            "kind": "expression",
+            "usage": "name [serial]"
+        },
+        {
+            "name": "namespace",
+            "kind": "command",
+            "usage": "namespace 'isolation' (true|false) namespace 'list' namespace ('create'|'activate'|'delete') (namespace_name) namespace 'move' (new_namespace_name) [old_namespace_name] ['merge'|'replace'] namespace ('get'|'set'|'print') (namespace_name) ['all'|'alias'|'lists'|'timers'] [source_name] [destination_name] namespace 'print' [namespace_name] ['all'|'alias'|'lists'|'timers'] [name]"
+        },
+        {
+            "name": "organizer",
+            "kind": "command",
+            "usage": "organizer ('profile name') [source] [destination] [dragDelay]"
+        },
+        {
+            "name": "organizing",
+            "kind": "expression",
+            "usage": "if not organizing"
+        },
+        {
+            "name": "paralyzed",
+            "kind": "expression",
+            "usage": "paralyzed [serial]"
+        },
+        {
+            "name": "partymsg",
+            "kind": "command",
+            "usage": "partymsg ('text') [color] [serial]"
+        },
+        {
+            "name": "pathfindto",
+            "kind": "command",
+            "usage": "pathfindto x y"
+        },
+        {
+            "name": "pause",
+            "kind": "command",
+            "usage": "Pause execution for the given number of milliseconds"
+        },
+        {
+            "name": "physical",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "ping",
+            "kind": "command",
+            "usage": "ping"
+        },
+        {
+            "name": "playmacro",
+            "kind": "command",
+            "usage": "playmacro 'name'"
+        },
+        {
+            "name": "playsound",
+            "kind": "command",
+            "usage": "playsound (sound id/'file name')"
+        },
+        {
+            "name": "poison",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "poisoned",
+            "kind": "expression",
+            "usage": "poisoned [serial]"
+        },
+        {
+            "name": "poplist",
+            "kind": "command",
+            "usage": "poplist ('list name') ('element value'/'front'/'back')"
+        },
+        {
+            "name": "promptalias",
+            "kind": "command",
+            "usage": "promptalias (alias name)"
+        },
+        {
+            "name": "promptmsg",
+            "kind": "command",
+            "usage": "promptmsg (text) [color]"
+        },
+        {
+            "name": "property",
+            "kind": "expression",
+            "usage": "property ('name') (serial) [operator] [value]"
+        },
+        {
+            "name": "pushlist",
+            "kind": "command",
+            "usage": "pushlist('list name') ('element value') ['front'/'back']"
+        },
+        {
+            "name": "questsbutton",
+            "kind": "command",
+            "usage": "questsbutton"
+        },
+        {
+            "name": "removefriend",
+            "kind": "command",
+            "usage": "removefriend NOT IMPLEMENTED"
+        },
+        {
+            "name": "removelist",
+            "kind": "command",
+            "usage": "removelist ('list name')"
+        },
+        {
+            "name": "removetimer",
+            "kind": "command",
+            "usage": "removetimer ('timer name')"
+        },
+        {
+            "name": "rename",
+            "kind": "command",
+            "usage": "rename (serial) ('name')"
+        },
+        {
+            "name": "replygump",
+            "kind": "command",
+            "usage": "replygump gump-id button [switch ...]"
+        },
+        {
+            "name": "restock",
+            "kind": "command",
+            "usage": "restock ('profile name') [source] [destination] [dragDelay]"
+        },
+        {
+            "name": "restocking",
+            "kind": "expression",
+            "usage": "if not restock"
+        },
+        {
+            "name": "resync",
+            "kind": "command",
+            "usage": "resync"
+        },
+        {
+            "name": "run",
+            "kind": "command",
+            "usage": "run (direction)"
+        },
+        {
+            "name": "script",
+            "kind": "command",
+            "usage": "script ('run'|'stop'|'suspend'|'resume'|'isrunning'|'issuspended') [script_name] [output_alias]"
+        },
+        {
+            "name": "sell",
+            "kind": "command",
+            "usage": "sell ('list name')"
+        },
+        {
+            "name": "serial",
+            "kind": "expression",
+            "usage": "serial ('target') returns the serial of the target be it mobile or item"
+        },
+        {
+            "name": "setability",
+            "kind": "command",
+            "usage": "setability ('primary'/'secondary'/'stun'/'disarm') ['on'/'off']"
+        },
+        {
+            "name": "setalias",
+            "kind": "command",
+            "usage": "setalias (alias name) [serial]"
+        },
+        {
+            "name": "setskill",
+            "kind": "command",
+            "usage": "setskill ('skill name') ('locked'/'up'/'down')"
+        },
+        {
+            "name": "settimer",
+            "kind": "command",
+            "usage": "settimer ('timer name') (milliseconds)"
+        },
+        {
+            "name": "shownames",
+            "kind": "command",
+            "usage": "shownames NOT IMPLEMENTED"
+        },
+        {
+            "name": "skill",
+            "kind": "expression",
+            "usage": "skill ('name') (operator) (value)"
+        },
+        {
+            "name": "skillbase",
+            "kind": "expression",
+            "usage": "skillbase ('name') (operator) (value)"
+        },
+        {
+            "name": "skillstate",
+            "kind": "expression",
+            "usage": "skillstate ('skill name') (operator) ('locked'/'up'/'down')"
+        },
+        {
+            "name": "skillvalue",
+            "kind": "expression",
+            "usage": "skill ('name') (operator) (value)"
+        },
+        {
+            "name": "snapshot",
+            "kind": "command",
+            "usage": "snapshot"
+        },
+        {
+            "name": "stam",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "str",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "sysmsg",
+            "kind": "command",
+            "usage": "sysmsg (text) [color]"
+        },
+        {
+            "name": "target",
+            "kind": "command",
+            "usage": "target (serial)"
+        },
+        {
+            "name": "targetexists",
+            "kind": "expression",
+            "usage": "targetexists ('Any' | 'Harmful' | 'Neutral' | 'Beneficial')"
+        },
+        {
+            "name": "targetground",
+            "kind": "command",
+            "usage": "targetground (graphic) [color] [range]"
+        },
+        {
+            "name": "targetresource",
+            "kind": "command",
+            "usage": "targetresource (serial) ('ore'/'sand'/'wood'/'graves'/'red mushrooms')"
+        },
+        {
+            "name": "targettile",
+            "kind": "command",
+            "usage": "targettile ('last'/'current'/(x y z)) [graphic]"
+        },
+        {
+            "name": "targettileoffset",
+            "kind": "command",
+            "usage": "targettileoffset (x y z) [graphic]"
+        },
+        {
+            "name": "targettilerelative",
+            "kind": "command",
+            "usage": "targettilerelative (serial) (range) [reverse = 'true' or 'false'] [graphic]"
+        },
+        {
+            "name": "targettype",
+            "kind": "command",
+            "usage": "targettype (graphic) [color] [range]"
+        },
+        {
+            "name": "timer",
+            "kind": "expression",
+            "usage": "timer ('timer name') (operator) (value)"
+        },
+        {
+            "name": "timerexists",
+            "kind": "expression",
+            "usage": "timerexists ('timer name')"
+        },
+        {
+            "name": "timermsg",
+            "kind": "command",
+            "usage": "timermsg (delay) (text) [color]"
+        },
+        {
+            "name": "toggleautoloot",
+            "kind": "command",
+            "usage": "toggleautoloot"
+        },
+        {
+            "name": "togglehands",
+            "kind": "command",
+            "usage": "togglehands ('left'/'right')"
+        },
+        {
+            "name": "togglemounted",
+            "kind": "command",
+            "usage": "togglemounted"
+        },
+        {
+            "name": "togglescavenger",
+            "kind": "command",
+            "usage": "togglescavenger"
+        },
+        {
+            "name": "turn",
+            "kind": "command",
+            "usage": "turn (direction)"
+        },
+        {
+            "name": "undress",
+            "kind": "command",
+            "usage": "undress ['profile name']"
+        },
+        {
+            "name": "uniquejournal",
+            "kind": "command",
+            "usage": "uniquejournal causes the journal for this script to not be impacted by journal changes in other scripts"
+        },
+        {
+            "name": "unsetalias",
+            "kind": "command",
+            "usage": "return false;"
+        },
+        {
+            "name": "useobject",
+            "kind": "command",
+            "usage": "useobject (serial)"
+        },
+        {
+            "name": "useonce",
+            "kind": "command",
+            "usage": "useonce (graphic) [color]"
+        },
+        {
+            "name": "useskill",
+            "kind": "command",
+            "usage": "useskill ('skill name'/'last')"
+        },
+        {
+            "name": "usetype",
+            "kind": "expression",
+            "usage": "usetype (graphic) [color] [source] [range or search level]"
+        },
+        {
+            "name": "virtue",
+            "kind": "command",
+            "usage": "virtue('honor'/'sacrifice'/'valor')"
+        },
+        {
+            "name": "waitforcontents",
+            "kind": "command",
+            "usage": "waitforcontents (serial) (timeout)"
+        },
+        {
+            "name": "waitforcontext",
+            "kind": "command",
+            "usage": "waitforcontext (serial) (option) (timeout)"
+        },
+        {
+            "name": "waitforgump",
+            "kind": "command",
+            "usage": "waitforgump (gump id/'any') (timeout)"
+        },
+        {
+            "name": "waitforjournal",
+            "kind": "command",
+            "usage": "waitforjournal ('text') (timeout)"
+        },
+        {
+            "name": "waitforprompt",
+            "kind": "command",
+            "usage": "waitforprompt (timeout)"
+        },
+        {
+            "name": "waitforproperties",
+            "kind": "command",
+            "usage": "waitforproperties (serial) (timeout)"
+        },
+        {
+            "name": "waitfortarget",
+            "kind": "command",
+            "usage": "waitfortarget (timeout)"
+        },
+        {
+            "name": "waitingfortarget",
+            "kind": "expression",
+            "usage": "waitingfortarget POORLY IMPLEMENTED"
+        },
+        {
+            "name": "walk",
+            "kind": "command",
+            "usage": "walk (direction)"
+        },
+        {
+            "name": "war",
+            "kind": "expression",
+            "usage": "war (serial)"
+        },
+        {
+            "name": "warmode",
+            "kind": "command",
+            "usage": "war (on/off)"
+        },
+        {
+            "name": "weight",
+            "kind": "expression",
+            "usage": ""
+        },
+        {
+            "name": "where",
+            "kind": "command",
+            "usage": "where"
+        },
+        {
+            "name": "whispermsg",
+            "kind": "command",
+            "usage": "whispermsg ('text') [color]"
+        },
+        {
+            "name": "x",
+            "kind": "expression",
+            "usage": "x (serial)"
+        },
+        {
+            "name": "y",
+            "kind": "expression",
+            "usage": "y (serial)"
+        },
+        {
+            "name": "yellmsg",
+            "kind": "command",
+            "usage": "yellmsg ('text') [color]"
+        },
+        {
+            "name": "yellowhits",
+            "kind": "expression",
+            "usage": "yellowhits [serial]"
+        },
+        {
+            "name": "z",
+            "kind": "expression",
+            "usage": "z (serial)"
+        }
+    ]
+}

@@ -34,7 +34,7 @@ async function testPlay(ws) {
         commands: ["print('play-test-line-1')", "print('play-test-line-2')", "print(Player.Name)"],
     }));
     await new Promise((resolve) => {
-        setTimeout(() => { console.log('PLAY: timeout after 15s'); resolve(); }, 15000);
+        const timer = setTimeout(() => { console.log('PLAY: timeout after 15s'); resolve(); }, 15000);
         ws.onmessage = (ev) => {
             const r = dec('protocontrol.PlayResponse', ev.data);
             console.log(`PLAY response: type=${r.type} more=${r.more} result=${JSON.stringify(r.result)}`);

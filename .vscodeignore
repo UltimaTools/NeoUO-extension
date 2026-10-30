@@ -19,3 +19,7 @@ vscode_mock.js
 proto_control_node_test.js
 proto_control_test_client.py
 settings.png
+
+# Type-only packages pulled in by protobufjs (not needed at runtime)
+node_modules/@types/**
+node_modules/undici-types/**

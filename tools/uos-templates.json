@@ -1,0 +1,289 @@
+{
+    "if": {
+        "body": [
+            "if ${1:condition}",
+            "\t$0",
+            "endif"
+        ],
+        "description": "if / endif block"
+    },
+    "ifel": {
+        "body": [
+            "if ${1:condition}",
+            "\t${2:// body}",
+            "elseif ${3:condition}",
+            "\t$0",
+            "endif"
+        ],
+        "description": "if / elseif / endif block"
+    },
+    "else": {
+        "body": [
+            "else",
+            "\t$0"
+        ],
+        "description": "else branch"
+    },
+    "while": {
+        "body": [
+            "while ${1:condition}",
+            "\t$0",
+            "endwhile"
+        ],
+        "description": "while / endwhile loop"
+    },
+    "for": {
+        "body": [
+            "for ${1:count}",
+            "\t$0",
+            "endfor"
+        ],
+        "description": "counted loop"
+    },
+    "for_to": {
+        "body": [
+            "for ${1:start} to ${2:end}",
+            "\t$0",
+            "endfor"
+        ],
+        "description": "loop from start to end"
+    },
+    "for_list": {
+        "body": [
+            "for ${1:count} to ${2:'list name'}",
+            "\t$0",
+            "endfor"
+        ],
+        "description": "loop over the first N entries of a list"
+    },
+    "for_to_list": {
+        "body": [
+            "for ${1:start} to ${2:end} in ${3:'list name'}",
+            "\t$0",
+            "endfor"
+        ],
+        "description": "loop over a list range with a loop variable"
+    },
+    "pause": {
+        "body": [
+            "pause ${1:milliseconds}"
+        ],
+        "description": "Pause the script"
+    },
+    "walk": {
+        "body": [
+            "walk ${1|'north','east','south','west','northeast','southeast','southwest','northwest'|}"
+        ],
+        "description": "Walk in a direction"
+    },
+    "msg": {
+        "body": [
+            "msg ${1:text} ${2:color}"
+        ],
+        "description": "Send a system message"
+    },
+    "target": {
+        "body": [
+            "target ${1:serial} ${2:timeout}"
+        ],
+        "description": "Target a serial with an optional timeout"
+    },
+    "findtype": {
+        "body": [
+            "findtype ${1:graphic} ${2:color} ${3:source} ${4:amount} ${5:range or search level}"
+        ],
+        "description": "Find items by graphic and optional filters"
+    },
+    "moveitem": {
+        "body": [
+            "moveitem ${1:serial} ${2:destination} ${3:x y z} ${4:amount}"
+        ],
+        "description": "Move an item to a container or location"
+    },
+    "list": {
+        "body": [
+            "list ${1:'list name'} ${2|==,!=,>=,<=,>,<|} ${3:value}"
+        ],
+        "description": "Compare a list count"
+    },
+    "timer": {
+        "body": [
+            "timer ${1:'timer name'} ${2|==,!=,>=,<=,>,<|} ${3:value}"
+        ],
+        "description": "Compare a timer value"
+    },
+    "distance": {
+        "body": [
+            "distance ${1:serial} ${2|==,!=,>=,<=,>,<|} ${3:value}"
+        ],
+        "description": "Compare distance to a mobile"
+    },
+    "skill": {
+        "body": [
+            "skill ${1:'skill name'} ${2|==,!=,>=,<=,>,<|} ${3:value}"
+        ],
+        "description": "Compare a skill value"
+    },
+    "contents": {
+        "body": [
+            "contents ${1:serial} ${2|==,!=,>=,<=,>,<|} ${3:value}"
+        ],
+        "description": "Compare the contents count of a container"
+    },
+    "injournal": {
+        "body": [
+            "injournal ${1:'text'} ${2|'author','system'|}"
+        ],
+        "description": "Check the journal for text"
+    },
+    "pushlist": {
+        "body": [
+            "pushlist ${1:'list name'} ${2:'element value'} ${3|'front','back'|}"
+        ],
+        "description": "Add an element to a list"
+    },
+    "virtue": {
+        "body": [
+            "virtue ${1|'honor','sacrifice','valor'|}"
+        ],
+        "description": "Use a virtue"
+    },
+    "targettile": {
+        "body": [
+            "targettile ${1|'last','current',x y z|} ${2:optional graphic}"
+        ],
+        "description": "Target a tile"
+    },
+    "replygump": {
+        "body": [
+            "replygump ${1|gump id,'any'|} ${2:button}"
+        ],
+        "description": "Reply to a gump"
+    },
+    "pathfindto": {
+        "body": [
+            "pathfindto ${1:x} ${2:y} ${3:z}"
+        ],
+        "description": "Pathfind to a location"
+    },
+    "warmode": {
+        "body": [
+            "warmode ${1|on,off|}"
+        ],
+        "description": "Toggle war mode"
+    },
+    "skillvalue": {
+        "body": [
+            "skillvalue ${1:'skill name'}"
+        ],
+        "description": "Read a skill value"
+    },
+    "serial": {
+        "body": [
+            "serial ${1:target}"
+        ],
+        "description": "Return the serial of the target"
+    },
+    "shownames": {
+        "body": [
+            "shownames ${1|'mobiles','corpses'|}"
+        ],
+        "description": "Show names of mobiles or corpses"
+    },
+    "equipwand": {
+        "body": [
+            "equipwand ${1:'wand type'} ${2:min charges}"
+        ],
+        "description": "Equip a wand"
+    },
+    "namespace": {
+        "body": [
+            "namespace ${1|'list','create','activate','delete','move','get','set','print'|} ${2:arguments}"
+        ],
+        "description": "Manage a script namespace"
+    },
+    "unsetalias": {
+        "body": [
+            "unsetalias $0"
+        ],
+        "description": "Remove an alias"
+    },
+    "dressconfig": {
+        "body": [
+            "dressconfig $0"
+        ],
+        "description": "Configure the dress agent"
+    },
+    "cast": {
+        "body": [
+            "cast ${1|spell id,'spell name','last'|} ${2:serial}"
+        ],
+        "description": "Cast a spell by id, name, or last"
+    },
+    "clearhands": {
+        "body": [
+            "clearhands ${1|'left','right','both'|}"
+        ],
+        "description": "Clear one or both hands"
+    },
+    "closegump": {
+        "body": [
+            "closegump ${1|'paperdoll','status','profile','container'|} ${2:serial}"
+        ],
+        "description": "Close a gump"
+    },
+    "poplist": {
+        "body": [
+            "poplist ${1:'list name'} ${2|'element value','front','back'|}"
+        ],
+        "description": "Remove an element from a list"
+    },
+    "setability": {
+        "body": [
+            "setability ${1|'primary','secondary','stun','disarm'|} ${2|'on','off'|}"
+        ],
+        "description": "Toggle a special ability"
+    },
+    "setskill": {
+        "body": [
+            "setskill ${1:'skill name'} ${2|'locked','up','down'|}"
+        ],
+        "description": "Set a skill's lock state"
+    },
+    "skillstate": {
+        "body": [
+            "skillstate ${1:'skill name'} ${2|==,!=|} ${3|'locked','up','down'|}"
+        ],
+        "description": "Compare a skill's lock state"
+    },
+    "togglehands": {
+        "body": [
+            "togglehands ${1|'left','right'|}"
+        ],
+        "description": "Toggle a hand"
+    },
+    "useskill": {
+        "body": [
+            "useskill ${1:'skill name'/'last'}"
+        ],
+        "description": "Use a skill"
+    },
+    "targettilerelative": {
+        "body": [
+            "targettilerelative ${1:serial} ${2:range} ${3|'true','false'|} ${4:graphic}"
+        ],
+        "description": "Target a tile relative to a mobile"
+    },
+    "movetypeoffset": {
+        "body": [
+            "movetypeoffset ${1:graphic} ${2:source} ${3|'ground','container'|} ${4:x y z} ${5:color} ${6:amount} ${7:range or search level}"
+        ],
+        "description": "Move items of a type relative to a location"
+    },
+    "playmacro": {
+        "body": [
+            "playmacro ${1:'macro name'}"
+        ],
+        "description": "Play a macro"
+    }
+}

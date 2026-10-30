@@ -27,11 +27,11 @@
                 },
                 {
                     "name": "support.function.uos",
-                    "match": "\\b(fly|land|setability|attack|clearhands|clickobject|bandageself|usetype|useobject|useonce|clearusequeue|moveitem|moveitemoffset|movetype|movetypeoffset|walk|turn|run|useskill|feed|rename|shownames|equipitem|togglemounted|equipwand|buy|sell|clearbuy|clearsell|organizer|autoloot|dress|undress|dressconfig|toggleautoloout|togglescavenger|counter|unsetalias|setalias|findalias|promptalias|contents|inregion|skill|x|y|z|physical|fire|cold|poison|energy|str|dex|int|hits|maxhits|diffhits|stam|maxstam|mana|maxmana|usequeue|dressing|organizing|followers|maxfollowers|gold|hidden|luck|tithingpoints|weight|maxweight|diffweight|graphic|color|serial|amount|name|dead|direction|flying|paralyzed|poisoned|mounted|yellowhits|war|criminal|enemy|friend|gray|innocent|invulnerable|murderer|findobject|distance|inrange|buffexists|property|findtype|findlayer|skillstate|counttype|counttypeground|findwand|inparty|infriendlist|warmode|waitforgump|replygump|ingump|gumpexists|closegump|injournal|clearjournal|waitforjournal|poplist|pushlist|removelist|listexists|list|createlist|inlist|clearlist|info|ping|playmacro|playsound|resync|snapshot|hotkeys|where|messagebox|mapuo|clickscreen|paperdoll|helpbutton|guildbutton|questbutton|logoutbutton|virtue|msg|headmsg|partymsg|allymsg|whispermsg|yellmsg|sysmsg|chatmsg|emotemsg|promptmsg|timermsg|waitforprompt|cancelprompt|addfriend|removefriend|contextmenu|waitforcontext|ignoreboject|clearignorelist|setskill|waitforproperties|autocolorpick|waitforcontents|miniheal|bigheal|cast|chivalryheal|waitfortarget|canceltarget|target|targettype|targetground|targettile|targettileoffset|targettilerelative|cleartargetqueue|autotargetlast|autotargetself|autotargetobject|autotargettype|autotargettile|autotargettileoffset|autotargettilerelative|autotargetghost|autotargetground|cancelautotarget|getenemy|targetexists|waitingfortarget|getfriend|timer|timerexists|settimer|removetimer|createtimer)[!]?\\b"
+                    "match": "\\b(addfriend|allymsg|amount|attack|autocolorpick|autoloot|autotargetobject|bandage|bandageself|bigheal|buffexists|buy|cancelautotarget|cancelprompt|canceltarget|cast|chatmsg|chivalryheal|clearbuy|clearhands|clearignorelist|clearjournal|clearlist|clearsell|cleartargetqueue|clearusequeue|clickobject|clickscreen|closegump|cold|color|contents|contextmenu|counter|counttype|counttypeground|createlist|createtimer|criminal|dead|dex|diffhits|diffweight|direction|directionname|distance|dress|dressconfig|durability|emotemsg|energy|equipitem|equipwand|feed|findalias|findlayer|findobject|findtype|findwand|fire|fly|flying|followers|getenemy|getfriend|gold|graphic|gray|guildbutton|guildmsg|gumpexists|headmsg|helpbutton|hidden|hits|hotkeys|ignoreobject|info|infriendlist|ingump|injournal|inlist|innocent|inparty|inrange|inregion|int|land|list|listexists|location|logoutbutton|luck|mana|mapuo|maxfollowers|maxhits|maxmana|maxstam|maxweight|messagebox|miniheal|mounted|moveitem|moveitemoffset|movetype|movetypeoffset|msg|murderer|name|namespace|organizer|organizing|paralyzed|partymsg|pathfindto|physical|ping|playmacro|playsound|poison|poisoned|poplist|promptalias|promptmsg|property|pushlist|questsbutton|removefriend|removelist|removetimer|rename|replygump|restock|restocking|resync|run|script|sell|serial|setability|setalias|setskill|settimer|shownames|skill|skillbase|skillstate|skillvalue|snapshot|stam|str|sysmsg|target|targetexists|targetground|targetresource|targettile|targettileoffset|targettilerelative|targettype|timer|timerexists|timermsg|toggleautoloot|togglehands|togglemounted|togglescavenger|turn|undress|uniquejournal|unsetalias|useobject|useonce|useskill|usetype|virtue|waitforcontents|waitforcontext|waitforgump|waitforjournal|waitforprompt|waitforproperties|waitfortarget|waitingfortarget|walk|war|warmode|weight|where|whispermsg|x|y|yellmsg|yellowhits|z)[!]?\\b"
                 },
                 {
                     "name": "support.constant.uos",
-                    "match": "\\b[\\']?(any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)[\\']?\\b"
+                    "match": "\\b(any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)\\b"
                 },
                 {
                     "name": "comment.line.uos",
@@ -42,12 +42,12 @@
                     "match": "\\b(?i:(true|false))\\b"
                 },
                 {
-                    "name": "constant.numeric.uos",
-                    "match": "\\b[0-9a-fA-F]{1,16}\\b"
-                },
-                {
                     "name": "constant.numeric.hexadecimal.uos",
                     "match": "\\b0(x|X)[0-9a-fA-F]+\\b"
+                },
+                {
+                    "name": "constant.numeric.uos",
+                    "match": "\\b[0-9]{1,16}\\b"
                 },
                 {
                     "name": "string.quoted.single.uos",
@@ -56,7 +56,7 @@
                     "patterns": [
                         {
                             "name": "support.constant.uos",
-                            "match": "\\b(found|any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)\\b"
+                            "match": "\\b(any|backpack|bank|enemy|friend|ground|last|lasttarget|lastobject|lefthand|mount|righthand|self)\\b"
                         }
                     ]
                 },
