@@ -33,7 +33,7 @@ each client's technical help tab.
 
 ```bash
 npm install
-npx @vscode/vsce package
+npx vsce package
 code --install-extension neouo-0.1.0.vsix
 ```
 

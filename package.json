@@ -206,7 +206,8 @@
         "@types/node": "^22.5.4",
         "@types/vscode": "^1.60.0",
         "@types/ws": "^8.5.14",
-        "eslint": "^9.11.1"
+        "eslint": "^9.11.1",
+        "@vscode/vsce": "^4.1.0"
     },
     "dependencies": {
         "protobufjs": "^7.4.0",

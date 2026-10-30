@@ -39,7 +39,7 @@ protobuf:
 # Package the extension into a .vsix file
 package: lint check-assets
 	@echo "Packaging the extension into a .vsix file..."
-	npx --yes @vscode/vsce package
+	npx --no-install vsce package
 
 # Clean the project
 clean:

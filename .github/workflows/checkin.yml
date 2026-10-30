@@ -43,7 +43,7 @@ jobs:
           node -e "const fs=require('fs');const p=require('./package.json');p.version='${{ github.event.release.tag_name }}'.replace(/^v/,'');fs.writeFileSync('package.json',JSON.stringify(p,null,4)+'\n');console.log(p.version)"
 
       - name: Package extension
-        run: npx --yes @vscode/vsce package
+        run: npx --no-install vsce package
 
       - name: Upload VSIX
         uses: actions/upload-artifact@v4
@@ -53,4 +53,4 @@ jobs:
 
       - name: Publish to Marketplace (Trusted Publishing)
         if: github.event_name == 'release'
-        run: npx --yes @vscode/vsce publish --oidc
+        run: npx --no-install vsce publish --oidc
