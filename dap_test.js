@@ -170,6 +170,8 @@ async function main() {
 
     adapter.dispose();
 
+    await runNoEntryScenario();
+
     console.log('');
     if (failures.length) {
         console.log(`RESULT: ${failures.length} FAILED -> ${failures.join(' | ')}`);
@@ -177,6 +179,74 @@ async function main() {
     }
     console.log('RESULT: ALL DAP TESTS PASSED');
     process.exit(0);
+}
+
+// Scenario 2: stopOnEntry=false must skip the first-line stop and run to the breakpoint.
+async function runNoEntryScenario() {
+    const localResponses = new Map();
+    const localEvents = [];
+    let localSeq = 1;
+
+    const adapter = new NeoUODapAdapter({
+        configuration: { type: 'neouo', request: 'launch', program: SCRIPT_PATH, port: PORT }
+    });
+    adapter.onDidSendMessage((message) => {
+        if (message.type === 'response') localResponses.set(message.request_seq, message);
+        else if (message.type === 'event') localEvents.push(message);
+    });
+
+    const send = (command, args) => {
+        const seq = localSeq++;
+        adapter.handleMessage({ seq, type: 'request', command, arguments: args || {} });
+        return seq;
+    };
+    const response = (seq, label) => waitFor(() => localResponses.get(seq), `${label} response`);
+    const event = (name, predicate) => () => localEvents.find((e) => e.event === name && (!predicate || predicate(e.body)));
+
+    let seq = send('initialize', { clientID: 'dap-test-noentry', adapterID: 'neouo', linesStartAt1: true, columnsStartAt1: true });
+    let resp = await response(seq, 'initialize');
+    check('stopOnEntry=false: initialize success', resp.success === true, resp);
+
+    const launchSeq = send('launch', {
+        type: 'neouo', request: 'launch', program: SCRIPT_PATH, port: PORT, stopOnEntry: false
+    });
+    await waitFor(event('initialized'), 'initialized event (scenario 2)');
+    resp = await response(launchSeq, 'launch');
+    check('stopOnEntry=false: launch success', resp.success === true, resp);
+
+    const bpSeq = send('setBreakpoints', {
+        source: { path: SCRIPT_PATH, name: path.basename(SCRIPT_PATH) },
+        breakpoints: [{ line: 4 }]
+    });
+    resp = await response(bpSeq, 'setBreakpoints');
+    check(
+        'stopOnEntry=false: breakpoint verified at line 4',
+        resp.success && resp.body && resp.body.breakpoints[0] && resp.body.breakpoints[0].verified === true,
+        resp
+    );
+
+    seq = send('configurationDone');
+    resp = await response(seq, 'configurationDone');
+    check('stopOnEntry=false: configurationDone success', resp.success === true, resp);
+
+    await waitFor(event('stopped', (b) => b.reason === 'breakpoint'), 'breakpoint stop (scenario 2)', 20000);
+    check('stopOnEntry=false: stopped at breakpoint', true);
+    check(
+        'stopOnEntry=false: no entry stop emitted',
+        !localEvents.some((e) => e.event === 'stopped' && e.body.reason === 'entry')
+    );
+
+    const stackSeq = send('stackTrace', { threadId: 1 });
+    resp = await response(stackSeq, 'stackTrace');
+    const frames = (resp.body && resp.body.stackFrames) || [];
+    check('stopOnEntry=false: top frame at line 4', frames[0] && frames[0].line === 4, frames[0]);
+
+    const discSeq = send('disconnect', { terminateDebuggee: true });
+    resp = await response(discSeq, 'disconnect');
+    check('stopOnEntry=false: disconnect success', resp.success === true, resp);
+    await waitFor(event('terminated'), 'terminated event (scenario 2)');
+
+    adapter.dispose();
 }
 
 main().catch((e) => {

@@ -99,7 +99,7 @@ Supported debug features:
 Limitations:
 
 - Debugging is **Python only** (NeoUO's debug engine rejects other languages).
-- Execution always stops on the first line of the script (`stopOnEntry` is accepted but not used).
+- By default execution stops on the first line; set `"stopOnEntry": false` to run until the first breakpoint.
 - Pausing a running script and stepping backwards are not supported.
 - All Python exceptions pause execution, including ones your script catches.
 - One debug session per file at a time; use the launch configuration `port` to target a different client instance.
@@ -127,8 +127,9 @@ The test scripts expect a running NeoUO client with a logged-in character.
 Pass the ProtoControl port as the first argument (default `15454`):
 
 ```bash
-node dap_test.js 15454                  # end-to-end DAP session (breakpoints, stepping, variables, evaluate)
+node dap_test.js 15454                  # end-to-end DAP sessions (entry stop, breakpoints, stepping, variables, evaluate, stopOnEntry=false)
 node proto_control_node_test.js 15454 play
+node proto_control_node_test.js 15454 play-stop
 node proto_control_node_test.js 15454 record
 node proto_control_node_test.js 15454 debug
 ```

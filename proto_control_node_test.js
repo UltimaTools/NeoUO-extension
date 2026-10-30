@@ -43,6 +43,34 @@ async function testPlay(ws) {
     });
 }
 
+async function testPlayStop(ws) {
+    const sessionid = 424244;
+    ws.send(enc('protocontrol.PlayRequest', {
+        type: T.PlayRequestType, sessionid, language: 1,
+        commands: ['import time', 'for i in range(200):', '    time.sleep(0.05)'],
+    }));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    console.log('PLAY-STOP: sending StopPlay on the same socket');
+    ws.send(enc('protocontrol.StopPlayRequest', { type: T.StopPlayRequestType, sessionid }));
+
+    await new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error('no final PlayResponse more=false after StopPlay')),
+            8000
+        );
+        ws.onmessage = (ev) => {
+            const r = dec('protocontrol.PlayResponse', ev.data);
+            console.log(`PLAY-STOP response: type=${r.type} more=${r.more} result=${JSON.stringify(r.result)}`);
+            if (r.type === T.PlayResponseType && !r.more) {
+                clearTimeout(timer);
+                resolve();
+            }
+        };
+    });
+    console.log('PLAY-STOP: stop acknowledged on the play socket');
+}
+
 async function testRecord(ws) {
     const sessionid = 525252;
     ws.send(enc('protocontrol.RecordRequest', { type: T.RecordRequestType, sessionid, language: 1 }));
@@ -179,6 +207,7 @@ async function main() {
     const ws = await connect();
     console.log(`websocket connected to ws://localhost:${PORT}/proto`);
     if (MODE === 'play') await testPlay(ws);
+    else if (MODE === 'play-stop') await testPlayStop(ws);
     else if (MODE === 'record') await testRecord(ws);
     else if (MODE === 'debug') await testDebug(ws);
     ws.close();

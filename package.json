@@ -41,7 +41,6 @@
         "onCommand:neoUO.stopRecording",
         "onCommand:neoUO.play",
         "onCommand:neoUO.stopPlaying",
-        "onDebug",
         "onDebugResolve:neouo"
     ],
     "main": "./extension.js",
@@ -72,7 +71,7 @@
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "description": "Ignored: NeoUO always pauses on the first line of the script.",
+                                "description": "Pause on the first line of the script (default true).",
                                 "default": true
                             }
                         }

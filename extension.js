@@ -2,14 +2,10 @@
 const WebSocket = require('ws');
 const protobuf = require('protobufjs');
 const { NeoUODapAdapter } = require('./debug');
-//const UOSIndentationRule = require('./uosIndentationRule');
 
 const PROTO_PATH = __dirname + '/ProtoControl.proto';
-let ProtoControl; // stores the loaded .proto definitions
-let isRecording = false;
-let isPlaying = false;
 
-// Enum values from ProtoMessageType in your .proto file
+// Enum values from ProtoMessageType in ProtoControl.proto
 const ProtoMessageType = {
     PlayResponseType: 1,
     PlayRequestType: 2,
@@ -21,365 +17,396 @@ const ProtoMessageType = {
     StopRecordResponseType: 13
 };
 
+const CONNECT_TIMEOUT_MS = 5000;
+const STOP_TIMEOUT_MS = 5000;
+
+let protoRoot = null;
+let protoRootPromise = null;
+let playSession = null;
+let recordSession = null;
 let outputChannel;
 
 function getOutputChannel() {
     if (!outputChannel) {
-        // Create the output channel only once
-        outputChannel = vscode.window.createOutputChannel("NeoUO Results");
+        outputChannel = vscode.window.createOutputChannel('NeoUO Results');
     }
     return outputChannel;
 }
 
-function connectWebSocket(url) {
-    return new Promise((resolve, reject) => {
-        const ws = new WebSocket(url);
-
-        ws.onopen = () => {
-            console.log("WebSocket connected");
-            resolve(ws);
-        };
-
-        ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-            reject(error);
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket closed");
-        };
-    });
+function loadProto() {
+    if (!protoRootPromise) {
+        protoRootPromise = protobuf.load(PROTO_PATH).then((root) => {
+            protoRoot = root.lookup('protocontrol');
+            return protoRoot;
+        });
+    }
+    return protoRootPromise;
 }
 
-async function disconnectWebSocket(ws) {
-    return new Promise((resolve, _) => {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.close();
-            ws.onclose = () => {
-                console.log("WebSocket disconnected");
-                resolve();
-            };
-        } else {
-            resolve(); // Already closed
-        }
-    });
+function encode(typeName, payload) {
+    const Type = protoRoot.lookupType(typeName);
+    return Type.encode(Type.create(payload)).finish();
 }
 
-// Simple hash function to generate a 32-bit integer from a string
+function decode(typeName, data) {
+    const Type = protoRoot.lookupType(typeName);
+    return Type.decode(new Uint8Array(data));
+}
+
+function setPlaying(value) {
+    return vscode.commands.executeCommand('setContext', 'neoUO.isPlaying', value);
+}
+
+function setRecording(value) {
+    return vscode.commands.executeCommand('setContext', 'neoUO.isRecording', value);
+}
+
+function getPort() {
+    return vscode.workspace.getConfiguration('neoUO').get('serverPort', 15454);
+}
+
+// Stable 31-bit session id derived from the document path, so a Stop issued
+// after a window reload can still address the same server-side session.
 function simpleHash(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
+        hash = hash & hash;
     }
-    return Math.abs(hash);
+    return (hash & 0x7fffffff) || 1;
 }
 
 function getSessionId(document) {
-    // Use the full path of the file as the unique identifier
-    return simpleHash(document.uri.fsPath);
+    return simpleHash(document.uri.fsPath || document.uri.toString());
 }
 
-function serializeMessage(messageType, messageObject) {
-    if (!ProtoControl) {
-        throw new Error("ProtoControl is not loaded");
+function connectWebSocket(url) {
+    return new Promise((resolve, reject) => {
+        const ws = new WebSocket(url);
+        let settled = false;
+        const timer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            try { ws.terminate(); } catch { /* ignore */ }
+            reject(new Error(`Cannot connect to NeoUO at ${url} (is the client running and ProtoControl enabled?)`));
+        }, CONNECT_TIMEOUT_MS);
+
+        ws.onopen = () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(ws);
+        };
+        ws.onerror = () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            reject(new Error(`Cannot connect to NeoUO at ${url} (is the client running and ProtoControl enabled?)`));
+        };
+    });
+}
+
+function closeSocket(ws) {
+    if (!ws) return;
+    try { ws.close(); } catch { /* ignore */ }
+}
+
+async function sendOneShotStop(typeName, type, sessionid) {
+    let ws;
+    try {
+        ws = await connectWebSocket(`ws://localhost:${getPort()}/proto`);
+    } catch (error) {
+        vscode.window.showErrorMessage(error.message);
+        return;
     }
-    
-    const MessageType = ProtoControl.lookupType(messageType);
-    const message = MessageType.create(messageObject);
-    return MessageType.encode(message).finish();
+    try {
+        ws.send(encode(typeName, { type, sessionid }));
+    } catch { /* ignore */ }
+    setTimeout(() => closeSocket(ws), 1500);
+}
+
+function playLanguage(languageId) {
+    switch (languageId) {
+        case 'python': return 1;
+        case 'csharp': return 2;
+        case 'uos': return 3;
+        default: return 0;
+    }
+}
+
+function finishPlay(session, message) {
+    if (session.finished) return;
+    session.finished = true;
+    if (playSession === session) playSession = null;
+    closeSocket(session.ws);
+    setPlaying(false);
+    if (message) {
+        getOutputChannel().appendLine(message);
+        vscode.window.showErrorMessage(`NeoUO: ${message}`);
+    }
+}
+
+function finishRecord(session, message) {
+    if (session.finished) return;
+    session.finished = true;
+    if (recordSession === session) recordSession = null;
+    closeSocket(session.ws);
+    setRecording(false);
+    getOutputChannel().appendLine('Recording stopped.');
+    if (message) {
+        getOutputChannel().appendLine(message);
+        vscode.window.showErrorMessage(`NeoUO: ${message}`);
+    }
+}
+
+async function playCommand() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showErrorMessage('NeoUO: no active editor.');
+        return;
+    }
+    if (playSession) {
+        vscode.window.showWarningMessage('NeoUO: a script is already playing. Stop it first.');
+        return;
+    }
+
+    const document = editor.document;
+    const language = playLanguage(document.languageId);
+    if (!language) {
+        vscode.window.showErrorMessage(`NeoUO: cannot play '${document.languageId}' files (supported: Python, C#, UOS).`);
+        return;
+    }
+
+    await loadProto();
+
+    const channel = getOutputChannel();
+    channel.show(true);
+
+    let ws;
+    try {
+        ws = await connectWebSocket(`ws://localhost:${getPort()}/proto`);
+    } catch (error) {
+        vscode.window.showErrorMessage(error.message);
+        return;
+    }
+
+    const session = {
+        ws,
+        sessionid: getSessionId(document),
+        documentUri: document.uri.toString(),
+        finished: false
+    };
+    playSession = session;
+
+    ws.onmessage = (event) => {
+        let response;
+        try {
+            response = decode('protocontrol.PlayResponse', event.data);
+        } catch {
+            return;
+        }
+        if (response.type === ProtoMessageType.PlayResponseType) {
+            if (response.more) {
+                channel.appendLine(response.result);
+            } else {
+                finishPlay(session);
+            }
+        }
+    };
+    ws.onclose = () => {
+        if (!session.finished) finishPlay(session, 'NeoUO closed the play connection.');
+    };
+
+    setPlaying(true);
+    channel.appendLine(`Playing ${vscode.workspace.asRelativePath(document.uri)} on port ${getPort()}...`);
+
+    try {
+        ws.send(encode('protocontrol.PlayRequest', {
+            type: ProtoMessageType.PlayRequestType,
+            sessionid: session.sessionid,
+            language,
+            commands: document.getText().split(/\r?\n/)
+        }));
+    } catch (error) {
+        finishPlay(session, `Failed to start script: ${error.message}`);
+    }
+}
+
+async function stopPlayCommand() {
+    if (!playSession) {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            await loadProto();
+            await sendOneShotStop('protocontrol.StopPlayRequest', ProtoMessageType.StopPlayRequestType, getSessionId(editor.document));
+        }
+        setPlaying(false);
+        return;
+    }
+
+    const session = playSession;
+    try {
+        session.ws.send(encode('protocontrol.StopPlayRequest', {
+            type: ProtoMessageType.StopPlayRequestType,
+            sessionid: session.sessionid
+        }));
+    } catch (error) {
+        finishPlay(session, `Failed to stop script: ${error.message}`);
+        return;
+    }
+    setTimeout(() => {
+        if (playSession === session) finishPlay(session);
+    }, STOP_TIMEOUT_MS);
+}
+
+function appendRecordedCode(documentUri, code) {
+    if (!code) return;
+    const document = vscode.workspace.textDocuments.find((doc) => doc.uri.toString() === documentUri);
+    if (!document) return;
+
+    const edit = new vscode.WorkspaceEdit();
+    const text = document.getText();
+    const end = document.lineAt(document.lineCount - 1).range.end;
+    const prefix = text.length > 0 && !text.endsWith('\n') ? '\n' : '';
+    edit.insert(document.uri, end, prefix + code + '\n');
+    vscode.workspace.applyEdit(edit).then(undefined, (error) => {
+        getOutputChannel().appendLine(`Failed to append recorded code: ${error.message || error}`);
+    });
+}
+
+async function recordCommand() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showErrorMessage('NeoUO: no active editor.');
+        return;
+    }
+    if (recordSession) {
+        vscode.window.showWarningMessage('NeoUO: already recording. Stop the current recording first.');
+        return;
+    }
+
+    const document = editor.document;
+    const language = document.languageId === 'python' ? 1 : document.languageId === 'uos' ? 3 : 0;
+    if (!language) {
+        vscode.window.showErrorMessage(`NeoUO: cannot record '${document.languageId}' files (supported: Python, UOS).`);
+        return;
+    }
+
+    await loadProto();
+
+    const channel = getOutputChannel();
+    channel.show(true);
+
+    let ws;
+    try {
+        ws = await connectWebSocket(`ws://localhost:${getPort()}/proto`);
+    } catch (error) {
+        vscode.window.showErrorMessage(error.message);
+        return;
+    }
+
+    const session = {
+        ws,
+        sessionid: getSessionId(document),
+        documentUri: document.uri.toString(),
+        finished: false
+    };
+    recordSession = session;
+
+    ws.onmessage = (event) => {
+        let response;
+        try {
+            response = decode('protocontrol.RecordResponse', event.data);
+        } catch {
+            return;
+        }
+        if (response.type === ProtoMessageType.RecordResponseType) {
+            if (response.more) {
+                appendRecordedCode(session.documentUri, response.data);
+            } else {
+                finishRecord(session);
+            }
+        } else if (response.type === ProtoMessageType.StopRecordResponseType) {
+            finishRecord(session);
+        }
+    };
+    ws.onclose = () => {
+        if (!session.finished) finishRecord(session, 'NeoUO closed the recording connection.');
+    };
+
+    setRecording(true);
+    channel.appendLine(`Recording into ${vscode.workspace.asRelativePath(document.uri)} on port ${getPort()}...`);
+
+    try {
+        ws.send(encode('protocontrol.RecordRequest', {
+            type: ProtoMessageType.RecordRequestType,
+            sessionid: session.sessionid,
+            language
+        }));
+    } catch (error) {
+        finishRecord(session, `Failed to start recording: ${error.message}`);
+    }
+}
+
+async function stopRecordCommand() {
+    if (!recordSession) {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            await loadProto();
+            await sendOneShotStop('protocontrol.StopRecordRequest', ProtoMessageType.StopRecordRequestType, getSessionId(editor.document));
+        }
+        setRecording(false);
+        return;
+    }
+
+    const session = recordSession;
+    try {
+        session.ws.send(encode('protocontrol.StopRecordRequest', {
+            type: ProtoMessageType.StopRecordRequestType,
+            sessionid: session.sessionid
+        }));
+    } catch (error) {
+        finishRecord(session, `Failed to stop recording: ${error.message}`);
+        return;
+    }
+    setTimeout(() => {
+        if (recordSession === session) finishRecord(session);
+    }, STOP_TIMEOUT_MS);
+}
+
+async function runSafely(label, fn) {
+    try {
+        await fn();
+    } catch (error) {
+        console.error(`NeoUO ${label} error:`, error);
+        vscode.window.showErrorMessage(`NeoUO ${label} error: ${error.message || error}`);
+    }
 }
 
 function activate(context) {
-    console.log("Beginning activation");
-    
-    // Load the ProtoControl.proto file
-    protobuf.load(PROTO_PATH, (err, root) => {
-        if (err) {
-            console.error("Error loading proto file:", err);
-            return;
-        }
-        ProtoControl = root.lookup('protocontrol'); // Load the root of your proto package
-        console.log("ProtoControl definitions loaded");
+    loadProto().catch((error) => {
+        console.error('NeoUO: failed to load ProtoControl.proto', error);
     });
 
-    // Register UOS indentation rule
-    //console.log("Registering uos indention");
-    //const uosIndentationRule = new UOSIndentationRule();
-    //vscode.languages.setLanguageConfiguration('uos', {
-    //    onEnterRules: uosIndentationRule.onEnterRules
-    //});
+    context.subscriptions.push(
+        vscode.commands.registerCommand('neoUO.play', () => runSafely('play', playCommand)),
+        vscode.commands.registerCommand('neoUO.stopPlaying', () => runSafely('stop play', stopPlayCommand)),
+        vscode.commands.registerCommand('neoUO.record', () => runSafely('record', recordCommand)),
+        vscode.commands.registerCommand('neoUO.stopRecording', () => runSafely('stop record', stopRecordCommand))
+    );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('neoUO.play', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage('No active editor!');
-                return;
-            }
-            if (!ProtoControl) {
-                console.error("ProtoControl is not loaded");
-                return;
-            }
-
-            const document = editor.document;
-            const text = document.getText();
-            const language = document.languageId === 'python' ? 1 :
-                 document.languageId === 'csharp' ? 2 :
-                 document.languageId === 'uos' ? 3 : 0; // Default to 0 if none match
-            const sessionid = getSessionId(document);        
-
-            // Start Recording
-            isPlaying = true;
-            vscode.commands.executeCommand('setContext', 'neoUO.isPlaying', isPlaying);
-
-            const playRequest = {
-                type: ProtoMessageType.PlayRequestType,
-                sessionid: sessionid, 
-                language: language,
-                commands: text.split('\n')
-            };
-            
-            // Retrieve the port number from the settings
-            const config = vscode.workspace.getConfiguration('neoUO');
-            const port = config.get('serverPort', 15454); // Default to 15454 if not set        
-            const wsUrl = `ws://localhost:${port}/proto`; // Dynamically constructed server address
-            
-            // Create an OutputChannel instance
-            
-            const outputChannel = getOutputChannel();
-            outputChannel.show();
-            try {
-                const ws = await connectWebSocket(wsUrl);
-                const requestBuffer = serializeMessage("protocontrol.PlayRequest", playRequest);
-                ws.send(requestBuffer);
-
-                ws.onmessage = (event) => {
-                    const responseBuffer = new Uint8Array(event.data);
-                    const PlayResponse = ProtoControl.lookupType('protocontrol.PlayResponse');
-                    const playResponse = PlayResponse.decode(responseBuffer);
-
-                    if (playResponse.type === ProtoMessageType.PlayResponseType) {
-                        if (playResponse.more) {
-                            outputChannel.appendLine(playResponse.result);
-                        } else {
-                            isPlaying = false;
-                            vscode.commands.executeCommand('setContext', 'neoUO.isPlaying', isPlaying);
-                            // Disconnect WebSocket when done
-                            disconnectWebSocket(ws);
-                        }
-                    }
-                };
-                
-                // Disconnect WebSocket when done
-                ws.onclose = () => {
-                    console.log("WebSocket connection closed");
-                };
-
-            } catch (error) {
-                console.error("Error in play command:", error);
+        vscode.languages.registerDocumentFormattingEditProvider('uos', {
+            provideDocumentFormattingEdits(document) {
+                const text = document.getText();
+                const fullRange = new vscode.Range(
+                    document.positionAt(0),
+                    document.positionAt(text.length)
+                );
+                return [vscode.TextEdit.replace(fullRange, formatText(text))];
             }
         })
     );
-    
-    context.subscriptions.push(
-        vscode.commands.registerCommand('neoUO.stopPlaying', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage('No active editor!');
-                return;
-            }
-            if (!ProtoControl) {
-                console.error("ProtoControl is not loaded");
-                return;
-            }
-            // Stop Playing
-            isPlaying = false;
-            vscode.commands.executeCommand('setContext', 'neoUO.isPlaying', isPlaying);
-            
-            const document = editor.document;
-            const sessionid = getSessionId(document);        
-
-            const stopPlayRequest = {
-                type: ProtoMessageType.StopPlayRequestType,
-                sessionid: sessionid
-            };
-            try {       
-                // Retrieve the port number from the settings
-                const config = vscode.workspace.getConfiguration('neoUO');
-                const port = config.get('serverPort', 15454); // Default to 15454 if not set    
-                const wsUrl = `ws://localhost:${port}/proto`; // Dynamically constructed server address 
-                
-                const ws = await connectWebSocket(wsUrl);
-
-                // Serialize and send RecordRequest
-                const requestBuffer = serializeMessage("protocontrol.StopPlayRequest", stopPlayRequest);
-                ws.send(requestBuffer);
-                
-                ws.onmessage = (event) => {
-                    const responseBuffer = new Uint8Array(event.data);
-                    const RecordResponse = ProtoControl.lookupType('protocontrol.StopPlayResponse');
-                    const response = RecordResponse.decode(responseBuffer);
-
-                    if (response.type === ProtoMessageType.StopPlayResponseType) {
-                        const outputChannel = getOutputChannel();
-                        outputChannel.show();
-                        outputChannel.appendLine('Play stopped successfully');
-                        isPlaying = false;
-                        vscode.commands.executeCommand('setContext', 'neoUO.isPlaying', isPlaying);
-                        disconnectWebSocket(ws);                        
-                    }
-                };
-            } catch (error) {
-                console.error("Error in stopPlay command:", error);
-            }
-        })      
-    );
-    
-    context.subscriptions.push(
-        vscode.commands.registerCommand('neoUO.record', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage('No active editor!');
-                return;
-            }
-            if (!ProtoControl) {
-                console.error("ProtoControl is not loaded");
-                return;
-            }
-
-            const document = editor.document;
-            const language = document.languageId === 'python' ? 1 :
-                 document.languageId === 'uos' ? 3 : 0; // Default to 0 if none match
-            
-            const sessionid = getSessionId(document);        
-            
-            // Start Recording
-            isRecording = true;
-            vscode.commands.executeCommand('setContext', 'neoUO.isRecording', isRecording);
-
-            const recordRequest = {
-                type: ProtoMessageType.RecordRequestType,  // Use the numeric value for RecordRequestType
-                sessionid: sessionid,
-                language: language
-            };
-
-            try {
-                const outputChannel = getOutputChannel();
-                outputChannel.show();
-
-                // Retrieve the port number from the settings
-                const config = vscode.workspace.getConfiguration('neoUO');
-                const port = config.get('serverPort', 15454); // Default to 15454 if not set    
-                const wsUrl = `ws://localhost:${port}/proto`; // Dynamically constructed server address 
-
-                const ws = await connectWebSocket(wsUrl);
-
-                // Serialize and send RecordRequest
-                const requestBuffer = serializeMessage('protocontrol.RecordRequest', recordRequest);
-                ws.send(requestBuffer);
-
-                ws.onmessage = (event) => {
-                    const responseBuffer = new Uint8Array(event.data);
-                    const RecordResponse = ProtoControl.lookupType('protocontrol.RecordResponse');
-                    const recordResponse = RecordResponse.decode(responseBuffer);
-
-                    // Create an OutputChannel instance
-                    outputChannel.appendLine(`Type: ${recordResponse.type} More: ${recordResponse.more} Data: ${recordResponse.data}`);
-                    if (recordResponse.type === ProtoMessageType.RecordResponseType) {
-                        if (recordResponse.more) {
-                            editor.edit(editBuilder => {
-                                editBuilder.insert(new vscode.Position(editor.document.lineCount, 0), recordResponse.data + '\n');
-                            });
-                        } else {
-                            isRecording = false;
-                            vscode.commands.executeCommand('setContext', 'neoUO.isRecording', isRecording);
-                            disconnectWebSocket(ws);
-                        }
-                    }
-                };
-
-                // Disconnect WebSocket when done
-                ws.onclose = () => {
-                    console.log("WebSocket connection closed");
-                };
-                
-            } catch (error) {
-                console.error("Error in record command:", error);
-            }
-        })
-    );
-    
-    context.subscriptions.push(
-        vscode.commands.registerCommand('neoUO.stopRecording', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage('No active editor!');
-                return;
-            }
-            if (!ProtoControl) {
-                console.error("ProtoControl is not loaded");
-                return;
-            }
-            // Stop Recording
-            isRecording = false;
-            vscode.commands.executeCommand('setContext', 'neoUO.isRecording', isRecording);
-            
-            const document = editor.document;
-            const sessionid = getSessionId(document);        
-
-            const stopRecordRequest = {
-                type: ProtoMessageType.StopRecordRequestType,
-                sessionid: sessionid
-            };
-            try {       
-                // Retrieve the port number from the settings
-                const config = vscode.workspace.getConfiguration('neoUO');
-                const port = config.get('serverPort', 15454); // Default to 15454 if not set    
-                const wsUrl = `ws://localhost:${port}/proto`; // Dynamically constructed server address 
-                
-                const ws = await connectWebSocket(wsUrl);
-
-                // Serialize and send RecordRequest
-                const requestBuffer = serializeMessage("protocontrol.StopRecordRequest", stopRecordRequest);
-                ws.send(requestBuffer);
-                
-                ws.onmessage = (event) => {
-                    const responseBuffer = new Uint8Array(event.data);
-                    const RecordResponse = ProtoControl.lookupType('protocontrol.StopRecordResponse');
-                    const response = RecordResponse.decode(responseBuffer);
-
-                    if (response.type === ProtoMessageType.StopRecordResponseType) {
-                        const outputChannel = getOutputChannel();
-                        outputChannel.show();
-                        outputChannel.appendLine('Recording stopped successfully');
-                        isRecording = false;
-                        vscode.commands.executeCommand('setContext', 'neoUO.isRecording', isRecording);
-                        disconnectWebSocket(ws);                        
-                    }
-                };
-            } catch (error) {
-                console.error("Error in stopRecord command:", error);
-            }
-        })      
-    );
-
-    let disposable = vscode.languages.registerDocumentFormattingEditProvider('uos', {
-        provideDocumentFormattingEdits(document) {
-            const edits = [];
-            const text = document.getText();
-            const formattedText = formatText(text);
-            const fullRange = new vscode.Range(
-                document.positionAt(0),
-                document.positionAt(text.length)
-            );
-            edits.push(vscode.TextEdit.replace(fullRange, formattedText));
-            return edits;
-        }
-    });
-
-    context.subscriptions.push(disposable);
 
     context.subscriptions.push(
         vscode.debug.registerDebugAdapterDescriptorFactory('neouo', {
@@ -399,7 +426,7 @@ function activate(context) {
                     config.program = vscode.window.activeTextEditor.document.uri.fsPath;
                 }
                 if (config.port === undefined || config.port === null) {
-                    config.port = vscode.workspace.getConfiguration('neoUO').get('serverPort', 15454);
+                    config.port = getPort();
                 }
                 return config;
             }
@@ -412,7 +439,7 @@ function formatText(text) {
     const decreaseIndentPattern = /^\s*(endwhile|endfor|else|endif)\b/;
     const lines = text.split('\n');
     let indentLevel = 0;
-    const indentSize = 4; // Number of spaces for each indent level
+    const indentSize = 4;
 
     return lines.map(line => {
         if (decreaseIndentPattern.test(line)) {
@@ -431,6 +458,18 @@ function formatText(text) {
 }
 
 function deactivate() {
+    if (playSession) {
+        const session = playSession;
+        playSession = null;
+        session.finished = true;
+        closeSocket(session.ws);
+    }
+    if (recordSession) {
+        const session = recordSession;
+        recordSession = null;
+        session.finished = true;
+        closeSocket(session.ws);
+    }
 }
 
 module.exports = {

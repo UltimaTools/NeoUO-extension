@@ -107,6 +107,8 @@ class NeoUODapAdapter {
         this._sessionid = 0;
         this._programPath = '';
         this._port = 0;
+        this._stopOnEntry = true;
+        this._pendingAutoContinue = false;
     }
 
     handleMessage(message) {
@@ -118,7 +120,15 @@ class NeoUODapAdapter {
         if (this._disposed) return;
         this._disposed = true;
         if (this._watchdog) clearTimeout(this._watchdog);
+        for (const queue of this._waiters.values()) {
+            for (const entry of queue) {
+                clearTimeout(entry.timer);
+                entry.reject(new Error('Debug adapter disposed'));
+            }
+        }
+        this._waiters.clear();
         this._closeSocket();
+        this._sendEmitter.dispose();
     }
 
     // -- DAP plumbing ----------------------------------------------------------
@@ -162,6 +172,20 @@ class NeoUODapAdapter {
                     });
                 }
             }, ENTRY_WATCHDOG_MS);
+        }
+        this._maybeAutoContinue();
+    }
+
+    _maybeAutoContinue() {
+        if (!this._ready || !this._pendingAutoContinue || this._disposed || this._terminated) return;
+        this._pendingAutoContinue = false;
+        try {
+            this._sendProto('protocontrol.DebugContinueRequest', {
+                type: MSG.DebugContinueRequestType,
+                sessionid: this._sessionid
+            });
+        } catch (error) {
+            this._emit('output', { category: 'console', output: `[NeoUO] Failed to continue past entry: ${error.message || error}\n` });
         }
     }
 
@@ -225,8 +249,9 @@ class NeoUODapAdapter {
             : path.join(this._session.workspaceFolder ? this._session.workspaceFolder.uri.fsPath : process.cwd(), args.program);
 
         const config = vscode.workspace.getConfiguration('neoUO');
-        this._port = args.port || config.get('serverPort', 15454);
+        this._port = Number(args.port) || config.get('serverPort', 15454);
         this._sessionid = Math.floor(Math.random() * 1000000000) + 1;
+        this._stopOnEntry = args.stopOnEntry !== false;
 
         const source = this._readSource(this._programPath);
         this._root = await protoRoot();
@@ -260,15 +285,21 @@ class NeoUODapAdapter {
 
     async _shutdown(request) {
         this._ready = true;
+        if (this._watchdog) {
+            clearTimeout(this._watchdog);
+            this._watchdog = null;
+        }
         if (this._ws) {
-            try {
-                const pending = this._waitFor(MSG.DebugDisconnectResponseType, 3000);
-                this._sendProto('protocontrol.DebugDisconnectRequest', {
-                    type: MSG.DebugDisconnectRequestType,
-                    sessionid: this._sessionid
-                });
-                await pending;
-            } catch { /* best effort */ }
+            if (this._sessionid) {
+                try {
+                    const waiter = this._waitFor(MSG.DebugDisconnectResponseType, 3000);
+                    this._sendProto('protocontrol.DebugDisconnectRequest', {
+                        type: MSG.DebugDisconnectRequestType,
+                        sessionid: this._sessionid
+                    });
+                    await waiter.promise;
+                } catch { /* best effort */ }
+            }
             this._closeSocket();
         }
         if (!this._terminated) {
@@ -338,29 +369,51 @@ class NeoUODapAdapter {
     }
 
     _waitFor(typeValue, timeoutMs) {
-        return new Promise((resolve, reject) => {
-            let queue = this._waiters.get(typeValue);
-            if (!queue) {
-                queue = [];
-                this._waiters.set(typeValue, queue);
-            }
-            const entry = { resolve, reject, timer: null };
-            entry.timer = setTimeout(() => {
-                const idx = queue.indexOf(entry);
-                if (idx >= 0) queue.splice(idx, 1);
-                reject(new Error(`NeoUO did not respond to ${TYPE_TO_PROTO[typeValue] || typeValue} within ${timeoutMs}ms`));
-            }, timeoutMs);
-            queue.push(entry);
+        let queue = this._waiters.get(typeValue);
+        if (!queue) {
+            queue = [];
+            this._waiters.set(typeValue, queue);
+        }
+
+        let entry;
+        const promise = new Promise((resolve, reject) => {
+            entry = { resolve, reject, timer: null };
         });
+        entry.timer = setTimeout(() => {
+            const idx = queue.indexOf(entry);
+            if (idx >= 0) queue.splice(idx, 1);
+            entry.reject(new Error(`NeoUO did not respond to ${TYPE_TO_PROTO[typeValue] || typeValue} within ${timeoutMs}ms`));
+        }, timeoutMs);
+        queue.push(entry);
+
+        const cancel = () => {
+            const idx = queue.indexOf(entry);
+            if (idx >= 0) queue.splice(idx, 1);
+            clearTimeout(entry.timer);
+        };
+        return { promise, cancel };
     }
 
     async _request(reqType, respType, typeName, payload) {
-        const pending = this._waitFor(respType, REQUEST_TIMEOUT_MS);
-        this._sendProto(typeName, payload);
-        return pending;
+        const waiter = this._waitFor(respType, REQUEST_TIMEOUT_MS);
+        try {
+            this._sendProto(typeName, payload);
+        } catch (error) {
+            waiter.cancel();
+            throw error;
+        }
+        return waiter.promise;
     }
 
     _onProtoMessage(data) {
+        try {
+            this._handleProtoMessage(data);
+        } catch (error) {
+            log(`failed to decode message from NeoUO: ${error.message || error}`);
+        }
+    }
+
+    _handleProtoMessage(data) {
         const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
         const type = peekType(buf);
         const protoName = TYPE_TO_PROTO[type];
@@ -414,6 +467,17 @@ class NeoUODapAdapter {
                 break;
             case REASON.DebugStep:
             default:
+                if (this._firstStop && !this._stopOnEntry) {
+                    this._firstStop = false;
+                    this._stoppedOnce = true;
+                    if (this._watchdog) {
+                        clearTimeout(this._watchdog);
+                        this._watchdog = null;
+                    }
+                    this._pendingAutoContinue = true;
+                    this._maybeAutoContinue();
+                    break;
+                }
                 this._emitStopped(this._firstStop ? 'entry' : 'step', undefined);
                 break;
         }
@@ -434,6 +498,10 @@ class NeoUODapAdapter {
     _onScriptTerminated() {
         if (this._terminated) return;
         this._terminated = true;
+        if (this._watchdog) {
+            clearTimeout(this._watchdog);
+            this._watchdog = null;
+        }
         this._emit('output', { category: 'console', output: '[NeoUO] Script ended.\n' });
         this._emit('terminated', {});
     }
