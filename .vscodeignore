@@ -19,3 +19,6 @@ proto_control_test_client.py
 # Type-only packages pulled in by protobufjs (not needed at runtime)
 node_modules/@types/**
 node_modules/undici-types/**
+
+# Contributor/agent documentation
+AGENTS.md
